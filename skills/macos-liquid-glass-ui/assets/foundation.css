@@ -1,0 +1,98 @@
+/* Optional scoped Web baseline; adapt to the project's existing token system. */
+.lg-theme {
+  --lg-bg: #f5f5f7;
+  --lg-surface: #fff;
+  --lg-text: #1d1d1f;
+  --lg-muted: #62626a;
+  --lg-separator: #e8e9ee;
+  --lg-accent: #007aff;
+  --lg-button: #006be0;
+  --lg-button-text: #fff;
+  --lg-glass: rgba(250, 251, 253, .78);
+  --lg-edge: rgba(255, 255, 255, .75);
+  color: var(--lg-text);
+  background: var(--lg-bg);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", sans-serif;
+}
+.lg-theme[data-theme="dark"] {
+  --lg-bg: #16181d;
+  --lg-surface: #22252c;
+  --lg-text: #f5f5f7;
+  --lg-muted: #b5b8c2;
+  --lg-separator: #363b46;
+  --lg-accent: #409cff;
+  --lg-button: #409cff;
+  --lg-button-text: #101b29;
+  --lg-glass: rgba(35, 39, 48, .82);
+  --lg-edge: rgba(255, 255, 255, .12);
+}
+.lg-workspace {
+  box-sizing: border-box;
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+.lg-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-width: 0;
+  min-height: 0;
+}
+.lg-content-scroll {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  scroll-padding-block: 1rem;
+}
+.lg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: .75rem;
+  padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--lg-separator);
+  background: var(--lg-surface);
+}
+.lg-glass {
+  background: var(--lg-glass);
+  border: 1px solid var(--lg-edge);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 28px rgba(25, 40, 65, .08);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+.lg-primary {
+  min-height: 2.75rem;
+  padding: .625rem 1.25rem;
+  border: 0;
+  border-radius: .75rem;
+  background: var(--lg-button);
+  color: var(--lg-button-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lg-theme :focus-visible { outline: 3px solid var(--lg-accent); outline-offset: 3px; }
+/* Content-page alternative; do not combine with locked workspace mode. */
+.lg-document { min-height: 100dvh; }
+@supports not (backdrop-filter: blur(1px)) {
+  .lg-glass { background: var(--lg-surface); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .lg-glass {
+    background: var(--lg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+/* Illustrative fallback: adapt breakpoints to the product's minimum sizes. */
+@media (max-width: 47.99rem), (max-height: 35rem) {
+  .lg-workspace { height: auto; min-height: 100dvh; overflow: visible; }
+  .lg-workspace .lg-panel { display: block; }
+  .lg-workspace .lg-content-scroll { overflow: visible; }
+  .lg-workspace .lg-actions { position: sticky; bottom: 0; }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "macOS Liquid Glass UI"
+  short_description: "跨项目的玻璃质感 UI：完整色板、稳定布局、固定操作区与响应式验收"
+  default_prompt: "使用 $macos-liquid-glass-ui，为当前产品设计或完善 macOS 26 风格界面，明确视觉规范、滚动归属、固定操作区和响应式行为。"
