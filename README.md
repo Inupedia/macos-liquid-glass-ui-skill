@@ -156,7 +156,7 @@ Cursor 也支持放入项目的 `.cursor/skills/<skill-name>/`。其他 Agent �
 
 下面这组十二生肖图标由 `macos-liquid-glass-icon` 的图标家族流程生成：先冻结统一的材质、视角、层级和视觉语言，再只替换生肖主体，用于验证 Skill 在一组图标中的风格一致性。
 
-![Chinese Zodiac Liquid Glass icon set](assets/examples/chinese-zodiac-liquid-glass.jpg)
+![Chinese Zodiac Liquid Glass icon set](assets/examples/chinese-zodiac-liquid-glass.png)
 
 > 这是 AI 生成的视觉案例，用于展示 icon family 的统一风格与构图方向；真实 Apple App Icon 上线前仍应按照 Icon Composer / Xcode 的生产流程拆分并验证图层。
 
