@@ -1,0 +1,4 @@
+interface:
+  display_name: "macOS Liquid Glass Icon"
+  short_description: "直接用 ChatGPT 图像生成设计 Liquid Glass App Icon，并提供 Icon Composer 分层交付说明"
+  default_prompt: "使用 $macos-liquid-glass-icon，根据当前产品语义与品牌资产设计并直接生成一个 Liquid Glass 风格 App Icon；不要调用外部图像 API，并给出必要的 Icon Composer 分层说明。"
