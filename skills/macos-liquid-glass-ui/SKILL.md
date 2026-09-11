@@ -13,6 +13,7 @@ description: 为选择 macOS 26 Liquid Glass 风格的 Web 产品设计、实现
 - 设计/实现：检查实际入口、技术栈、现有组件、样式及未提交修改，复用既有能力，不强制换框架或组件库。
 - 审查：提供问题、触发条件、建议和验证方式；审查不自动授权实施。
 - 跨项目时移除水文、Archify 等业务依赖，不把单页或三栏变成所有产品的要求。
+- App Icon / 产品图标不由本 Skill 生成；需要图标概念、生图或 Icon Composer 分层交付时改用同仓库的 `macos-liquid-glass-icon` Skill。
 
 简短声明页面类型、使用人群、目标设备及布局模式；可从上下文判断时直接继续。
 
@@ -32,6 +33,7 @@ description: 为选择 macOS 26 Liquid Glass 风格的 Web 产品设计、实现
 - 动态状态、表单、图表、菜单或完整规范：读 [组件与交互](references/components-and-states.md)。
 - 实现/审查：读 [验收与交付](references/validation.md)；完整规范同时纳入验收要求。
 - 需要起步样式时参考 [基础 CSS](assets/foundation.css)，按现有 Token 转换；不是全局重置，不直接替换现有样式。
+- 用户真正要的是 App Icon / launcher icon / 产品图标时，停止套用页面玻璃规范，转用 `macos-liquid-glass-icon`。
 
 ## 工作方式
 
