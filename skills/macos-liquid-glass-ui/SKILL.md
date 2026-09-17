@@ -1,6 +1,6 @@
 ---
 name: macos-liquid-glass-ui
-description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、实现或审查 UI，提供材质语义、色板、窗口与导航、页面范式、完整组件覆盖、固定操作、滚动、响应式、可访问性、框架适配和验收规范。适用于跨项目复用该风格，不默认替换其他品牌设计；原生 SwiftUI/AppKit 请求转用同仓库 native skill。
+description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、实现或审查 UI，提供材质语义、色板、窗口与导航、页面范式、完整组件覆盖、固定操作、滚动、响应式、可访问性、框架与 Inspira UI 适配和验收规范。适用于跨项目复用该风格，不默认替换其他品牌设计；原生 SwiftUI/AppKit 请求转用同仓库 native skill。
 ---
 
 # macOS Liquid Glass UI
@@ -13,7 +13,8 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 
 - Web 产品、桌面 Web App、Electron/Tauri Web UI；
 - 需要 Liquid Glass 风格的页面、组件、布局、交互或审查；
-- 需要把现有 Web 产品改得更接近 macOS / Apple 的信息架构和视觉语言。
+- 需要把现有 Web 产品改得更接近 macOS / Apple 的信息架构和视觉语言；
+- Vue / Nuxt 产品明确要求结合 Inspira UI 做视觉增强。
 
 不要使用本 Skill：
 
@@ -28,6 +29,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - **审查**：提供问题、触发条件、风险、建议和验证方式；审查不自动授权实施。
 - **局部修改**：保留用户已认可区域，不因调用 Skill 擅自扩大改造范围。
 - **跨项目复用**：移除水文、Archify 等业务依赖，不把单页、三栏或固定品牌色变成所有产品要求。
+- **Inspira UI 集成**：把 Inspira UI 视为 Vue/Nuxt 的可选 presentation toolkit；Liquid Glass 规则仍负责信息架构、材质、动效预算、可访问性和验收。
 
 可从上下文判断时直接继续。只有页面类型、用户群、目标设备或任务边界会实质改变结果时才补充说明。
 
@@ -41,6 +43,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 6. **尊重系统偏好。** 不全局隐藏滚动条；支持 Reduce Motion、Reduce Transparency、Increase Contrast 和更明确边界需求。
 7. **状态真实。** 加载、空态、错误、部分成功和结果沿用稳定框架；不编造完成进度或数据。
 8. **平台感来自行为，不来自装饰。** 不添加无功能红黄绿按钮、假 Dock、过度胶囊或满屏玻璃。
+9. **第三方效果服从设计系统。** Inspira UI、Aceternity/Magic UI 类组件只能增强局部表达，不重新定义全局 tokens、交互模型或页面骨架。
 
 ## 工作顺序
 
@@ -70,6 +73,16 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 
 优先映射已有 tokens 和组件库。Vue、Element Plus、React、Tailwind、Headless 组件库、ECharts、Electron/Tauri 等实现策略读取实现适配参考，不为视觉迁移重写业务架构。
 
+如果用户明确要求 Inspira UI，或 Vue/Nuxt 页面需要 animation background、beam、spotlight、number effect、visualization 等表现型组件：
+
+1. 读取 `references/inspira-ui.md`；
+2. 先完成 Liquid Glass 页面范式和布局合同；
+3. 找出最多 1–3 个真正值得增强的区域；
+4. 优先保留 Element Plus / shadcn-vue / Nuxt UI 等成熟基础组件；
+5. 按 Inspira UI 当前官方文档安装具体组件，不整库复制；
+6. 将 demo tokens、motion 和状态映射回本 Skill；
+7. 验证 reduced motion、keyboard/touch、SSR 和性能。
+
 ### 5. 做负向检查
 
 对照 anti-patterns，重点排查：
@@ -81,7 +94,10 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - 嵌套滚动；
 - 假 macOS chrome；
 - 关键错误只用 Toast；
-- 200% 仍强制原布局。
+- 200% 仍强制原布局；
+- Inspira UI 多种特效同屏堆叠；
+- 为了“像 Mac”添加装饰性 Dock；
+- 动画替代真实 selected/focus/error 状态。
 
 ### 6. 验证
 
@@ -93,7 +109,8 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - 键盘与焦点；
 - Reduce Motion / Transparency；
 - 图表容器尺寸变化；
-- 模态/菜单层级与焦点恢复。
+- 模态/菜单层级与焦点恢复；
+- 第三方动效在 offscreen、touch、SSR/hydration 和 cleanup 场景的行为。
 
 使用环境允许的浏览器工具；不依赖特定插件。构建通过不等于视觉验收。
 
@@ -111,6 +128,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - **选择页面骨架**：`references/page-archetypes.md`
 - **生成/审查前的负向约束**：`references/anti-patterns.md`
 - **Vanilla/Vue/Element Plus/React/Tailwind/图表/Electron 实施**：`references/implementation-adapters.md`
+- **Inspira UI × Liquid Glass 选型、安装、适配、动效与性能约束**：`references/inspira-ui.md`
 - **实现/审查验收**：`references/validation.md`
 - **起步样式**：`assets/foundation.css`，按现有 Token 转换；不是全局 reset，不直接替换现有样式。
 
@@ -118,6 +136,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 
 - **完整 UI 规范**：视觉系统 + 材质 + 页面范式 + 布局滚动 + 窗口导航 + 完整组件矩阵 + 组件状态 + 可访问性 + 验收。
 - **现有项目实施**：页面范式 + 布局滚动 + 材质 + 相关组件 + 实现适配 + anti-patterns + 验收。
+- **Vue/Nuxt + Inspira UI**：页面范式 + 材质 + 实现适配 + Inspira UI + accessibility + anti-patterns + 验收。
 - **审查**：anti-patterns + 可访问性 + 布局滚动 + 验收，再按发现的问题读取具体模块。
 - **Dashboard / 数据产品**：视觉系统 + 材质 + components-and-states + component-matrix + 布局滚动 + 可访问性。
 - **地图/媒体/画布**：材质（重点 clear）+ window/navigation + page-archetypes + accessibility。
@@ -136,6 +155,14 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - Anti-pattern 检查；
 - 验收矩阵。
 
+如果使用 Inspira UI，额外说明：
+
+- 选用了哪些组件以及业务理由；
+- 哪些现有基础组件被保留；
+- token / motion 如何映射；
+- reduced-motion、touch/keyboard、SSR 与性能处理；
+- 哪些候选效果因过度装饰或成本过高被舍弃。
+
 实现交付说明修改范围、实际验证和未验证限制。不自行发布、改变系统偏好或声称完成未执行的检查。
 
 ## 官方边界
@@ -148,3 +175,9 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - https://developer.apple.com/design/human-interface-guidelines/sidebars
 - https://developer.apple.com/design/human-interface-guidelines/searching
 - https://developer.apple.com/documentation/technologyoverviews/liquid-glass
+
+Inspira UI 集成以其当前官方文档和仓库为准：
+
+- https://docs.inspira-ui.com/docs/en
+- https://docs.inspira-ui.com/docs/en/getting-started/installation
+- https://github.com/unovue/inspira-ui
