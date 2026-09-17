@@ -2,217 +2,358 @@
 
 让 AI Agent 为不同产品设计、实现和审查一致的 **macOS / Apple Liquid Glass 风格 UI 与 App Icon**。
 
-本仓库包含两个独立 Skill：
+这不是一份单纯的“毛玻璃配色表”。仓库的目标是把 Liquid Glass 拆成 Agent 可执行的：
 
-- `macos-liquid-glass-ui`：页面、组件、布局、滚动、响应式、状态与 Web 玻璃材质规范；
-- `macos-liquid-glass-icon`：App Icon / 产品图标的概念设计、ChatGPT 直接生图、迭代验收，以及 Icon Composer 分层交付说明。
+- 视觉与材质语义；
+- 页面范式与窗口信息架构；
+- Toolbar / Sidebar / Inspector / Search / Menu / Commands；
+- 完整组件与状态覆盖；
+- 滚动、短屏、窄屏与 200% 缩放；
+- Accessibility 与系统偏好；
+- Web 框架适配；
+- SwiftUI / AppKit 原生实现边界；
+- App Icon / Icon Composer 生产交付；
+- Anti-patterns、Evals 与验收。
 
-两者可以共享品牌色与视觉语言，但职责分开：页面 glass panel 不应直接缩小后当 App Icon，App Icon 也不应该把完整 UI 截图塞进图标里。
+本仓库与 Apple 无隶属关系。Web 视觉参数与 AI 生图参数属于本项目设计基线，不是 Apple 官方固定值；原生行为最终以当前 Apple SDK 与官方文档为准。
 
-这套仓库供 Agent 读取和执行，不依赖特定前端框架。Web 玻璃效果与 AI 图标生成参数属于本项目设计基线，并非 Apple 官方固定参数。本项目与 Apple 无隶属关系。
+---
 
-## 快速安装
+## 三个独立 Skill
 
-安装了 Node.js 和 npm 后，先查看仓库中可用 Skill：
+### 1. `macos-liquid-glass-ui`
+
+面向 **Web / Electron / Tauri Web UI / 跨端 Web 视觉层**。
+
+负责：
+
+- Liquid Glass 内容层 / 功能层语义；
+- Web 材质近似与 fallback；
+- 页面范式；
+- Window-like 信息架构；
+- Toolbar、Sidebar、Inspector、Search；
+- 组件、表格、图表、表单、浮层；
+- 稳定底部操作区；
+- 滚动、响应式、短屏与 200% 缩放；
+- Accessibility；
+- Vue / Element Plus / React / Tailwind / ECharts / Electron 等适配；
+- Anti-patterns 与验收。
+
+不负责原生 SwiftUI/AppKit，也不负责 App Icon。
+
+### 2. `macos-liquid-glass-native-ui`
+
+面向 **原生 macOS SwiftUI / AppKit / hybrid**。
+
+负责：
+
+- 系统组件优先的 Liquid Glass 实现；
+- Window、Toolbar、Sidebar、Inspector；
+- Search、Menu、Commands、Keyboard shortcuts；
+- Sheet、Popover、Panel；
+- 多窗口与 selection ownership；
+- Reduce Transparency / Increase Contrast / Reduce Motion / Show Borders 等系统适配；
+- 原生窗口与命令验收。
+
+核心原则：**系统已经会做的 Liquid Glass，不再手工画第二层。**
+
+### 3. `macos-liquid-glass-icon`
+
+面向 **App Icon / 产品图标**。
+
+负责：
+
+- 产品隐喻与轮廓；
+- 统一 palette / layer / material；
+- ChatGPT 内置图像生成；
+- 图标家族一致性；
+- 小尺寸 QA；
+- Icon Composer 分层 handoff。
+
+不用于普通 16–24px Toolbar 图标。
+
+---
+
+# 快速安装
+
+先查看仓库可用 Skill：
 
 ```bash
 npx skills add Inupedia/macos-liquid-glass-ui-skill --list
 ```
 
-安装 UI Skill：
+安装 Web UI Skill：
 
 ```bash
 npx skills add Inupedia/macos-liquid-glass-ui-skill --skill macos-liquid-glass-ui
 ```
 
-安装 Icon Skill：
+安装原生 macOS Skill：
+
+```bash
+npx skills add Inupedia/macos-liquid-glass-ui-skill --skill macos-liquid-glass-native-ui
+```
+
+安装 App Icon Skill：
 
 ```bash
 npx skills add Inupedia/macos-liquid-glass-ui-skill --skill macos-liquid-glass-icon
 ```
 
-按提示选择 Agent。默认安装到当前项目；需要跨项目使用时，添加 `--global`。
-
-**为 Codex 和 Cursor 全局安装 UI Skill：**
+全局安装给 Codex / Cursor：
 
 ```bash
-npx skills add Inupedia/macos-liquid-glass-ui-skill --skill macos-liquid-glass-ui --agent codex cursor --global
+npx skills add Inupedia/macos-liquid-glass-ui-skill \
+  --skill macos-liquid-glass-ui \
+  --agent codex cursor \
+  --global
 ```
 
-**为 Codex 和 Cursor 全局安装 Icon Skill：**
+把 `--skill` 替换成另外两个 Skill 名称即可。
 
-```bash
-npx skills add Inupedia/macos-liquid-glass-ui-skill --skill macos-liquid-glass-icon --agent codex cursor --global
-```
+---
 
-只使用其中一个 Agent 时，保留对应名称即可。安装流程与选项参考 [Skills CLI 文档](https://skills.sh/docs/cli)。安装后开启新会话；若客户端未刷新技能列表，可重启客户端。
-
-## 直接让 Agent 安装
-
-将下面这段话发给具备终端或 Skill 安装能力的 Agent：
+# 直接让 Agent 安装
 
 ```text
 请从 https://github.com/Inupedia/macos-liquid-glass-ui-skill 安装需要的 Skill：
-- UI：skills/macos-liquid-glass-ui/
+
+- Web / Electron / Tauri UI：skills/macos-liquid-glass-ui/
+- 原生 SwiftUI / AppKit：skills/macos-liquid-glass-native-ui/
 - App Icon：skills/macos-liquid-glass-icon/
 
-请使用可用的 Skill 安装器，或将完整 Skill 目录安装到当前 Agent 的用户级技能目录。
-必须保留各 Skill 下的 SKILL.md、agents/、references/，以及 UI Skill 的 assets/。
-如果已有同名且经过本地修改的 Skill，请先说明差异，避免覆盖本地定制。
-安装后检查 SKILL.md 和资源文件是否完整，并说明如何调用。
+请保留完整 Skill 目录，包括 SKILL.md、agents/、references/、assets/（若存在）和 evals/（若存在）。
+不要只复制 SKILL.md。
+
+如果已有同名且经过本地修改的 Skill，请先比较差异，不要直接覆盖。
 ```
 
-Codex 内置 Skill Installer 可直接使用：
+---
 
-```text
-https://github.com/Inupedia/macos-liquid-glass-ui-skill/tree/main/skills/macos-liquid-glass-ui
-```
+# 手动安装
 
-或：
+| Agent | Web UI | Native UI | App Icon |
+| --- | --- | --- | --- |
+| Codex | `$CODEX_HOME/skills/macos-liquid-glass-ui/` | `$CODEX_HOME/skills/macos-liquid-glass-native-ui/` | `$CODEX_HOME/skills/macos-liquid-glass-icon/` |
+| Cursor | `~/.cursor/skills/macos-liquid-glass-ui/` | `~/.cursor/skills/macos-liquid-glass-native-ui/` | `~/.cursor/skills/macos-liquid-glass-icon/` |
 
-```text
-https://github.com/Inupedia/macos-liquid-glass-ui-skill/tree/main/skills/macos-liquid-glass-icon
-```
+Cursor 也支持项目级 `.cursor/skills/<skill-name>/`。
 
-## 手动安装
+---
 
-下载仓库后，将需要的完整 Skill 文件夹复制到目标目录，不要只复制 `SKILL.md`。
-
-| Agent | UI Skill | Icon Skill |
-| --- | --- | --- |
-| Codex | `$CODEX_HOME/skills/macos-liquid-glass-ui/` | `$CODEX_HOME/skills/macos-liquid-glass-icon/` |
-| Cursor | `~/.cursor/skills/macos-liquid-glass-ui/` | `~/.cursor/skills/macos-liquid-glass-icon/` |
-
-Cursor 也支持放入项目的 `.cursor/skills/<skill-name>/`。其他 Agent 请使用其支持的 Skill 目录和安装方式。
-
-# macOS Liquid Glass UI Skill
-
-## 适合做什么
-
-`macos-liquid-glass-ui` 将视觉风格与布局行为一起定义：从完整的明暗色板、玻璃材质、字体与圆角，到稳定的底部操作区、滚动条、响应式布局和组件状态。
-
-适用于产品工作台、管理界面和演示页面，也可以只用来生成完整 UI 规范或提示词。
-
-### 生成完整 UI 规范
-
-```text
-使用 $macos-liquid-glass-ui，为一个面向非专业用户的知识管理产品生成完整 UI 规范。
-包含明暗色值、字体、间距、材质、布局、底部操作区、滚动条、响应式规则、
-组件状态和验收标准。这次只输出规范，不修改代码。
-```
-
-### 在现有项目中实施
-
-```text
-使用 macos-liquid-glass-ui Skill 完善当前项目的界面。
-先检查现有技术栈和组件，说明各区域的高度、滚动归属和按钮位置，再实施。
-主操作稳定在所属面板底部，中间内容展开时不能把按钮顶走。
-请验证窄屏、短屏、长文本和图表容器尺寸变化，并报告实际检查结果。
-```
-
-### 仅调整局部
-
-```text
-使用 macos-liquid-glass-ui Skill，只优化中间结果区域的图表与状态展示。
-保留已经认可的导航、配色和外围布局，沿用现有组件和数据含义。
-```
-
-### 审查现有界面
-
-```text
-使用 macos-liquid-glass-ui Skill 审查当前界面，暂不修改代码。
-重点检查底部操作被挤走、滚动嵌套、短屏裁切、弹窗溢出、文字对比度、
-键盘操作，以及加载、空态、失败和完成状态，给出触发条件和验证方式。
-```
-
-## UI 规范覆盖范围
-
-| 领域 | 包含内容 |
-| --- | --- |
-| 视觉系统 | 明暗主题色板、语义色、字体层级、间距、圆角、边框、阴影、玻璃材质与降级 |
-| 布局 | 锁高工作台与自然内容页、区域伸缩、稳定底部操作、长文本与溢出策略 |
-| 滚动与适配 | 滚动主体、系统滚动条偏好、窄屏与短屏、缩放、软键盘和安全区域 |
-| 组件 | 按钮、表单、表格、菜单、弹窗、抽屉、提示和焦点行为 |
-| 动态展示 | 加载、空态、错误、重试、结果、流程阶段、图表与动效 |
-| 验收 | 操作可达性、对比度、键盘访问、布局稳定性及浏览器验证记录 |
-
-页面或面板的主操作稳定在所属容器底部；搜索、筛选、行内编辑等局部操作仍放在操作对象旁。滚动条遵循系统与浏览器偏好，不全局隐藏。玻璃主要用于导航和控制层，正文与图表使用稳定底色。
-
-# macOS Liquid Glass Icon Skill
+# Web UI Skill
 
 ## 设计目标
 
-`macos-liquid-glass-icon` 用于生成 **App Icon / 产品图标**，参考 Apple 当前 Liquid Glass 图标思路，但不把生成流程绑到外部图像 API。
+`macos-liquid-glass-ui` 不只是让页面“看起来像 Mac”。它要求 Agent 同时处理：
 
-核心原则：
+1. 内容层与功能层；
+2. 页面范式；
+3. 布局与滚动合同；
+4. 材质选择；
+5. 完整组件状态；
+6. 平台式导航与输入模型；
+7. Accessibility；
+8. Anti-pattern 检查；
+9. 实际验收。
 
-- 当前 ChatGPT / 宿主有内置 image generation 时，直接调用它生成或编辑图片；
-- 不接第三方图像 provider，不索要 API Key；
-- 先冻结产品隐喻、轮廓、层级、HEX palette 和材质，再生图；
-- AI 生成的 PNG 是视觉成稿/方向稿，真正上架 Apple 平台时额外给出 Icon Composer layer map；
-- 不把 16–24 px 工具栏小图标强行做成重材质 App Icon。
+## Liquid Glass 的核心边界
+
+默认：
+
+- Toolbar / Sidebar / floating controls / Popover：可以使用 Liquid Glass；
+- 正文 / Table / Chart / long form：稳定内容 surface；
+- `glass-clear`：只用于图片、地图、视频等视觉丰富背景上的少量控制；
+- 不做满屏 glass cards；
+- 不做 glass-on-glass；
+- 不添加无功能的 traffic lights 或 Dock。
+
+## 页面范式
+
+内置范式包括：
+
+- Document / Reading
+- Finder-style Browser
+- Settings
+- Data Dashboard
+- IDE / Workbench
+- Chat / Agent
+- Media / Map / Canvas
+- Form Workflow
+- Table-centric Admin
+- Landing / Presentation
+
+Agent 应先选择主范式，再画布局，而不是默认所有产品三栏。
+
+## 完整组件覆盖
+
+覆盖：
+
+- Actions
+- Selection
+- Inputs
+- Navigation
+- Lists / Tables / Trees / Cards
+- Feedback
+- Overlays
+- Search / Filter
+- Charts
+- Canvas / Flow / Map
+- File / Asset
+- AI / Agent
+- Developer / Professional tools
+- Empty states
+- Density
+
+完整规范不等于把所有组件都塞进项目。Agent 只展开真实业务会使用的部分。
+
+## Web 框架适配
+
+实现参考覆盖：
+
+- Vanilla CSS
+- Vue 3
+- Element Plus
+- React
+- Tailwind
+- Headless UI / Radix / Ark 类组件
+- ECharts / Chart.js / D3
+- Electron / Tauri
+
+原则：**映射现有 token 和组件库，而不是为了换视觉重写业务架构。**
+
+## 示例 Prompt
+
+### 完整规范
+
+```text
+使用 $macos-liquid-glass-ui，为一个知识管理 Web 产品生成完整 Liquid Glass UI 规范。
+要求足够充足：包含材质语义、页面范式、Toolbar/Sidebar/Search、完整组件覆盖、
+滚动与短屏规则、200% 缩放、Accessibility、Anti-patterns 和验收。
+这次只输出规范，不改代码。
+```
+
+### 现有项目改造
+
+```text
+使用 $macos-liquid-glass-ui 完善当前 Vue + Element Plus 项目。
+保留现有组件库、路由和数据逻辑，先检查 token、布局和滚动归属，再渐进实施。
+Table、Chart 和正文保持稳定内容层，Liquid Glass 主要用于 Toolbar、Sidebar 和浮动控制。
+```
+
+### 审查
+
+```text
+使用 $macos-liquid-glass-ui 审查当前界面，先不要改代码。
+重点检查全页玻璃化、glass-on-glass、三栏滥用、嵌套滚动、Toolbar 过载、
+短屏裁切、200% 缩放、Reduce Transparency、键盘焦点和关键错误只用 Toast。
+```
+
+---
+
+# Native macOS Skill
+
+`macos-liquid-glass-native-ui` 专门避免一个常见问题：**把 Web 的 `backdrop-filter` 思路直接搬进 SwiftUI/AppKit。**
+
+## 核心原则
+
+- 标准组件优先；
+- Toolbar / Navigation / system controls 已经获得系统外观时，不重复叠 glass；
+- 内容区不整块 glass；
+- Commands / Menu / Toolbar / Keyboard shortcut 状态一致；
+- Window resize 是默认前提；
+- 多窗口时区分 app-global 与 window-local state；
+- 自定义控件响应系统 accessibility 环境。
+
+## 示例 Prompt
+
+```text
+使用 $macos-liquid-glass-native-ui 现代化当前 SwiftUI macOS 项目。
+优先使用系统 Toolbar、Sidebar、Search、Button 和 Menu/Commands，不手工复刻系统玻璃。
+请检查最小窗口、Toolbar overflow、Sidebar/Inspector、键盘、Reduce Transparency、
+Increase Contrast、Show Borders 和多窗口状态，并报告实际验证范围。
+```
+
+```text
+使用 $macos-liquid-glass-native-ui 审查这个 AppKit 老项目。
+不要重写现有架构，优先复用 NSToolbar、NSSplitViewController、系统 List/Table 和命令体系，
+找出哪些自定义 blur/glass 可以删掉，哪些浮动控制确实需要保留。
+```
+
+---
+
+# App Icon Skill
+
+`macos-liquid-glass-icon` 用于 App Icon / 产品图标。
+
+核心流程：
+
+1. 提取产品语义；
+2. 选择一个核心隐喻；
+3. 冻结 silhouette；
+4. 冻结 2–4 层 layer system；
+5. 冻结 HEX palette；
+6. 使用宿主图像生成；
+7. 小尺寸 QA；
+8. 给出 Icon Composer layer map。
+
+不调用第三方图像 API，不要求 API Key。
 
 ## Generated Example — Chinese Zodiac
 
-下面这组十二生肖图标由 `macos-liquid-glass-icon` 的图标家族流程生成：先冻结统一的材质、视角、层级和视觉语言，再只替换生肖主体，用于验证 Skill 在一组图标中的风格一致性。
-
 ![Chinese Zodiac Liquid Glass icon set](assets/examples/chinese-zodiac-liquid-glass.png)
 
-> 这是 AI 生成的视觉案例，用于展示 icon family 的统一风格与构图方向；真实 Apple App Icon 上线前仍应按照 Icon Composer / Xcode 的生产流程拆分并验证图层。
+这组图标用于验证 icon family 的 palette、材质、视角和细节密度一致性。AI 生成 PNG 属于视觉稿；真实 Apple App Icon 上线前仍需通过 Icon Composer / Xcode 生产验证。
 
-### 直接生成一个 App Icon
+## 示例 Prompt
 
 ```text
 使用 $macos-liquid-glass-icon，为当前产品设计并直接生成一个 Liquid Glass 风格 App Icon。
-先根据产品功能和已有 UI/品牌色确定一个核心隐喻，再调用 ChatGPT 内置图像生成。
-不要使用外部图像 API。最终图标要在 64px 和 32px 仍然能辨认，并给出简短的 Icon Composer 分层说明。
+先确定一个核心隐喻和强轮廓，再生成 1024x1024 单图。
+要求 64px 和 32px 仍能辨认，并给出 Icon Composer 分层说明。
 ```
-
-### 从现有 Logo / Icon 改造
 
 ```text
-使用 macos-liquid-glass-icon Skill，把我提供的现有 App Icon 改成 Liquid Glass 风格。
-必须保留原来的品牌轮廓和主色，只简化细节、调整前后层级和玻璃材质。
-直接使用图像编辑能力，不重新猜一个完全不同的图标。
+使用 $macos-liquid-glass-icon，为这一组产品入口图标建立统一 style spec。
+锁定 palette、layer count、视角、材质和细节预算，再逐个生成。
 ```
 
-### 先出候选方向
+---
 
-```text
-使用 macos-liquid-glass-icon Skill，为这个产品生成 2×2 四个 App Icon 方向。
-四个方向必须锁定同一 palette、材质强度、视角和细节预算，只比较不同的核心隐喻与构图。
-确定方向后再生成单独的 1024×1024 定稿。
-```
-
-### 做同风格图标家族
-
-```text
-使用 macos-liquid-glass-icon Skill，为这组产品入口图标建立统一 style spec。
-先锁定共同 HEX palette、层级、材质、视角、圆角语言和细节预算，再逐个生成；
-不要让每张图各自发明一种玻璃效果。
-```
-
-## Icon Skill 与 oil-icon 的差异
-
-本 Skill 借鉴“先冻结 style spec、再生图、最后 QA”的方法，但刻意去掉外部图像 API、API Key 配置和 provider fallback。
-
-它也不依赖固定的 4×4 切图工作流：单个 App Icon 默认直接生成单图；只有概念歧义高时才先做 2×2 候选方向。
-
-针对 Apple 平台，还增加了 Icon Composer 分层思路：视觉稿可以模拟 Liquid Glass，但生产源层应保持干净可拆，动态镜面、高光、折射、透明度和阴影留给系统/Icon Composer 处理。
-
-## 仓库结构
+# 仓库结构
 
 ```text
 skills/
 ├── macos-liquid-glass-ui/
 │   ├── SKILL.md
 │   ├── agents/openai.yaml
-│   ├── assets/foundation.css
+│   ├── assets/
+│   │   └── foundation.css
+│   ├── evals/
+│   │   └── core.jsonl
 │   └── references/
 │       ├── visual-system.md
+│       ├── materials-and-optics.md
 │       ├── layout-and-scroll.md
+│       ├── window-and-navigation.md
 │       ├── components-and-states.md
+│       ├── component-matrix.md
+│       ├── accessibility.md
+│       ├── page-archetypes.md
+│       ├── anti-patterns.md
+│       ├── implementation-adapters.md
 │       └── validation.md
+│
+├── macos-liquid-glass-native-ui/
+│   ├── SKILL.md
+│   ├── agents/openai.yaml
+│   ├── evals/
+│   │   └── core.jsonl
+│   └── references/
+│       ├── swiftui-appkit.md
+│       ├── native-structure.md
+│       └── validation.md
+│
 └── macos-liquid-glass-icon/
     ├── SKILL.md
     ├── agents/openai.yaml
@@ -222,45 +363,86 @@ skills/
         └── validation.md
 ```
 
-### UI Skill
+---
 
-- [Skill 入口](skills/macos-liquid-glass-ui/SKILL.md)：触发范围、工作流程和资源路由。
-- [视觉系统](skills/macos-liquid-glass-ui/references/visual-system.md)：颜色、材质、字体与尺寸。
-- [布局与滚动](skills/macos-liquid-glass-ui/references/layout-and-scroll.md)：高度、固定操作、自适应与滚动行为。
-- [组件与状态](skills/macos-liquid-glass-ui/references/components-and-states.md)：交互、图表与状态展示。
-- [验收规范](skills/macos-liquid-glass-ui/references/validation.md)：行为测试与交付要求。
-- [基础 CSS](skills/macos-liquid-glass-ui/assets/foundation.css)：可选 Token 和布局起点。
+# Progressive Disclosure
 
-### Icon Skill
+本仓库刻意不把所有规则塞进一个超长 `SKILL.md`。
 
-- [Skill 入口](skills/macos-liquid-glass-icon/SKILL.md)：触发范围、直接生图规则、工作流和生产交付。
-- [图标设计系统](skills/macos-liquid-glass-icon/references/icon-system.md)：轮廓、层级、palette、材质与品牌适配。
-- [ChatGPT Image Prompt 模板](skills/macos-liquid-glass-icon/references/prompt-template.md)：单图、候选稿、改图和图标家族提示词。
-- [图标验收](skills/macos-liquid-glass-icon/references/validation.md)：小尺寸、AI 瑕疵、材质和 Icon Composer 生产检查。
+Skill 入口负责：
 
-## Apple 官方生产参考
+- 判断是否应该触发；
+- 判断 Web / Native / Icon 路由；
+- 给出工作顺序；
+- 按任务选择最少必要 references。
 
-真实 Apple App Icon 的最终生产与验证以官方资料为准：
+深层知识放在 `references/`。这样可以继续扩充覆盖面，而不会让每次调用都读取整套设计系统。
 
-- [Human Interface Guidelines — App icons](https://developer.apple.com/design/human-interface-guidelines/app-icons)
+---
+
+# Evals
+
+仓库包含行为 eval fixtures，用于防止 Skill 越写越长但能力反而退化。
+
+当前覆盖示例包括：
+
+- Web vs Native vs Icon 路由；
+- 全页玻璃化；
+- glass-clear 使用条件；
+- Table / Chart 内容层；
+- 稳定底部操作；
+- 200% 缩放；
+- 滚动条系统偏好；
+- 假 traffic lights / Dock；
+- Chat / Agent 工作台；
+- SwiftUI raw glassEffect 滥用；
+- Toolbar command parity；
+- 多窗口 state ownership；
+- Accessibility。
+
+Evals 目前是可检查的 JSONL 测试资产，可继续接入 Agent runner 做自动评分。
+
+---
+
+# CI
+
+`.github/workflows/validate-skills.yml` 会检查：
+
+- 每个 Skill 是否有 `SKILL.md`；
+- frontmatter `name` 是否与目录一致；
+- description 是否存在；
+- `agents/openai.yaml` 是否存在；
+- `SKILL.md` 引用的本地 references/assets 是否存在；
+- eval JSONL 是否能解析；
+- eval id 是否重复；
+- `expected_skill` 是否指向真实 Skill。
+
+它不替代视觉 QA，但可以避免文档路由和测试资产在仓库演进中悄悄坏掉。
+
+---
+
+# Apple 官方参考
+
+需要核实当前系统行为时，以 Apple 官方资料为准：
+
+- [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
+- [Materials](https://developer.apple.com/design/human-interface-guidelines/materials)
+- [Designing for macOS](https://developer.apple.com/design/human-interface-guidelines/designing-for-macos/)
+- [Toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars)
+- [Sidebars](https://developer.apple.com/design/human-interface-guidelines/sidebars)
+- [Searching](https://developer.apple.com/design/human-interface-guidelines/searching)
+- [Liquid Glass technology overview](https://developer.apple.com/documentation/technologyoverviews/liquid-glass)
+- [App icons](https://developer.apple.com/design/human-interface-guidelines/app-icons)
 - [Icon Composer](https://developer.apple.com/icon-composer/)
-- [Creating your app icon using Icon Composer](https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer)
 
-## 更新与验证
+---
 
-通过 Skills CLI 安装后，可运行：
+# 更新
 
 ```bash
 npx skills update macos-liquid-glass-ui
+npx skills update macos-liquid-glass-native-ui
 npx skills update macos-liquid-glass-icon
 ```
 
-全局安装时添加 `--global`。手动安装时，请比较本地定制后更新完整目录。
-
-检查仓库中的技能是否被发现：
-
-```bash
-npx skills add Inupedia/macos-liquid-glass-ui-skill --list
-```
-
-安装成功表示 Agent 能读取规范；具体产品的 UI 或图标质量仍需在真实页面、目标尺寸，以及适用时的 Icon Composer / Xcode 中验证。请要求 Agent 区分已生成、已验收、已生产交付和已实际运行验证的状态。
+安装成功只表示 Agent 能读取 Skill；最终产品仍需要真实窗口、真实浏览器/系统设置、目标尺寸和真实业务状态下的验收。
