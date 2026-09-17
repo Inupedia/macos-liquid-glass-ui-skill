@@ -1,0 +1,105 @@
+name: Validate skills
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate skill structure and eval fixtures
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import pathlib
+          import re
+          import sys
+
+          root = pathlib.Path('skills')
+          errors = []
+
+          if not root.exists():
+              errors.append('missing skills/ directory')
+
+          skill_dirs = [p for p in root.iterdir() if p.is_dir()]
+          if not skill_dirs:
+              errors.append('no skill directories found')
+
+          for skill_dir in skill_dirs:
+              skill_file = skill_dir / 'SKILL.md'
+              if not skill_file.exists():
+                  errors.append(f'{skill_dir}: missing SKILL.md')
+                  continue
+
+              text = skill_file.read_text(encoding='utf-8')
+              match = re.match(r'^---\n(.*?)\n---\n', text, re.S)
+              if not match:
+                  errors.append(f'{skill_file}: missing YAML frontmatter')
+                  continue
+
+              frontmatter = match.group(1)
+              name_match = re.search(r'^name:\s*(.+?)\s*$', frontmatter, re.M)
+              desc_match = re.search(r'^description:\s*(.+?)\s*$', frontmatter, re.M)
+              if not name_match:
+                  errors.append(f'{skill_file}: missing name')
+              elif name_match.group(1).strip().strip('"\'') != skill_dir.name:
+                  errors.append(
+                      f'{skill_file}: frontmatter name must match directory name '
+                      f'({skill_dir.name})'
+                  )
+              if not desc_match or len(desc_match.group(1).strip()) < 20:
+                  errors.append(f'{skill_file}: description missing or too short')
+
+              agent_meta = skill_dir / 'agents' / 'openai.yaml'
+              if not agent_meta.exists():
+                  errors.append(f'{skill_dir}: missing agents/openai.yaml')
+
+              # SKILL.md uses backticked relative resource paths. Validate the ones
+              # that are intended to be local files.
+              refs = set(re.findall(r'`((?:references|assets)/[^`]+)`', text))
+              for ref in refs:
+                  target = skill_dir / ref
+                  if not target.exists():
+                      errors.append(f'{skill_file}: referenced file not found: {ref}')
+
+              eval_dir = skill_dir / 'evals'
+              if eval_dir.exists():
+                  seen_ids = set()
+                  for jsonl in eval_dir.glob('*.jsonl'):
+                      for line_no, raw in enumerate(jsonl.read_text(encoding='utf-8').splitlines(), 1):
+                          if not raw.strip():
+                              continue
+                          try:
+                              item = json.loads(raw)
+                          except json.JSONDecodeError as exc:
+                              errors.append(f'{jsonl}:{line_no}: invalid JSON: {exc}')
+                              continue
+                          case_id = item.get('id')
+                          prompt = item.get('prompt')
+                          expected = item.get('expected_skill')
+                          if not case_id:
+                              errors.append(f'{jsonl}:{line_no}: missing id')
+                          elif case_id in seen_ids:
+                              errors.append(f'{jsonl}:{line_no}: duplicate id {case_id}')
+                          else:
+                              seen_ids.add(case_id)
+                          if not isinstance(prompt, str) or len(prompt.strip()) < 8:
+                              errors.append(f'{jsonl}:{line_no}: prompt missing or too short')
+                          if expected and expected not in {p.name for p in skill_dirs}:
+                              errors.append(
+                                  f'{jsonl}:{line_no}: expected_skill references unknown skill {expected}'
+                              )
+
+          if errors:
+              print('Skill validation failed:')
+              for error in errors:
+                  print(f' - {error}')
+              sys.exit(1)
+
+          print(f'Validated {len(skill_dirs)} skills successfully.')
+          PY
