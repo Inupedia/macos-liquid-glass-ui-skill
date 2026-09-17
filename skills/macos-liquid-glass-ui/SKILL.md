@@ -1,6 +1,6 @@
 ---
 name: macos-liquid-glass-ui
-description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、实现或审查 UI，提供材质语义、色板、窗口与导航、页面范式、组件、固定操作、滚动、响应式、可访问性和验收规范。适用于跨项目复用该风格，不默认替换其他品牌设计；原生 SwiftUI/AppKit 请求转用同仓库 native skill。
+description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、实现或审查 UI，提供材质语义、色板、窗口与导航、页面范式、完整组件覆盖、固定操作、滚动、响应式、可访问性、框架适配和验收规范。适用于跨项目复用该风格，不默认替换其他品牌设计；原生 SwiftUI/AppKit 请求转用同仓库 native skill。
 ---
 
 # macOS Liquid Glass UI
@@ -64,7 +64,13 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 
 按业务需要覆盖默认、hover、pressed、focus、selected、disabled、readonly、loading、empty、error、long-content、narrow/short viewport、reduced motion/transparency 等状态，不为“完整”制造业务不存在的状态。
 
-### 4. 做负向检查
+如果用户要求“完整设计系统”或“组件要足够充足”，读取完整组件矩阵，再只展开目标产品实际会用到的类别。
+
+### 4. 适配现有技术栈
+
+优先映射已有 tokens 和组件库。Vue、Element Plus、React、Tailwind、Headless 组件库、ECharts、Electron/Tauri 等实现策略读取实现适配参考，不为视觉迁移重写业务架构。
+
+### 5. 做负向检查
 
 对照 anti-patterns，重点排查：
 
@@ -77,7 +83,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - 关键错误只用 Toast；
 - 200% 仍强制原布局。
 
-### 5. 验证
+### 6. 验证
 
 实现后验证真实行为，尤其：
 
@@ -99,19 +105,21 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - **Liquid Glass 语义、regular/clear、光学、降级、性能**：`references/materials-and-optics.md`
 - **布局、滚动、稳定底栏、短屏/窄屏**：`references/layout-and-scroll.md`
 - **Toolbar、Sidebar、Inspector、Search、Menu、Selection**：`references/window-and-navigation.md`
-- **组件、表单、图表、状态与动效**：`references/components-and-states.md`
+- **组件行为、表单、图表、状态与动效**：`references/components-and-states.md`
+- **完整组件覆盖范围**：`references/component-matrix.md`
 - **键盘、对比度、缩放、系统辅助偏好**：`references/accessibility.md`
 - **选择页面骨架**：`references/page-archetypes.md`
 - **生成/审查前的负向约束**：`references/anti-patterns.md`
+- **Vanilla/Vue/Element Plus/React/Tailwind/图表/Electron 实施**：`references/implementation-adapters.md`
 - **实现/审查验收**：`references/validation.md`
 - **起步样式**：`assets/foundation.css`，按现有 Token 转换；不是全局 reset，不直接替换现有样式。
 
 ### 推荐组合
 
-- **完整 UI 规范**：视觉系统 + 材质 + 页面范式 + 布局滚动 + 窗口导航 + 组件状态 + 可访问性 + 验收。
-- **现有项目实施**：页面范式 + 布局滚动 + 材质 + 相关组件 + anti-patterns + 验收。
+- **完整 UI 规范**：视觉系统 + 材质 + 页面范式 + 布局滚动 + 窗口导航 + 完整组件矩阵 + 组件状态 + 可访问性 + 验收。
+- **现有项目实施**：页面范式 + 布局滚动 + 材质 + 相关组件 + 实现适配 + anti-patterns + 验收。
 - **审查**：anti-patterns + 可访问性 + 布局滚动 + 验收，再按发现的问题读取具体模块。
-- **Dashboard / 数据产品**：视觉系统 + 材质 + components-and-states + 布局滚动 + 可访问性。
+- **Dashboard / 数据产品**：视觉系统 + 材质 + components-and-states + component-matrix + 布局滚动 + 可访问性。
 - **地图/媒体/画布**：材质（重点 clear）+ window/navigation + page-archetypes + accessibility。
 
 ## 交付要求
