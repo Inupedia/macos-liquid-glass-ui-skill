@@ -1,4 +1,4 @@
 interface:
   display_name: "macOS Liquid Glass UI"
-  short_description: "Web/跨端 Liquid Glass UI：材质语义、窗口导航、完整组件、响应式、可访问性与验收"
-  default_prompt: "使用 $macos-liquid-glass-ui，为当前 Web 或跨端产品设计、实现或审查 Liquid Glass 风格界面。先判断页面范式和内容层/功能层，明确滚动归属、Toolbar/Sidebar/Search、完整组件状态、响应式与可访问性；原生 SwiftUI/AppKit 请求改用 native skill。"
+  short_description: "Web/跨端 Liquid Glass UI：材质语义、窗口导航、完整组件、Inspira UI 增强、响应式、可访问性与验收"
+  default_prompt: "使用 $macos-liquid-glass-ui，为当前 Web 或跨端产品设计、实现或审查 Liquid Glass 风格界面。先判断页面范式和内容层/功能层，明确滚动归属、Toolbar/Sidebar/Search、完整组件状态、响应式与可访问性；Vue/Nuxt 项目若明确要求 Inspira UI，则把它作为可选视觉增强层并遵守 motion/performance/accessibility 约束；原生 SwiftUI/AppKit 请求改用 native skill。"
