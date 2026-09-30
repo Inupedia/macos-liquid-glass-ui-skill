@@ -178,11 +178,12 @@ Dialog：需要立即处理的重要决定。
 
 系统 bars（toolbar 等）默认已具备该行为；只有自建 bar 才需要显式注册。官方口径：`Scroll views offer a scrollEdgeEffectStyle(_:for:) that helps maintain sufficient legibility and contrast for controls by obscuring content that scrolls beneath them.`
 
-## 明确不覆盖
+## 交给其他 reference 的主题
 
-以下主题 **本 Skill 不给规则**，需要时按 Apple 官方文档处理，不要从本文件推断结论：
+以下主题不在本文件范围，已在对应 reference 中给出规则，不要从本文件推断结论：
 
-`MenuBarExtra`、`Settings` scene（⌘,）、`DocumentGroup` / `NSDocument` 与自动保存/版本浏览、窗口还原、Stage Manager、多显示器、Dock（`dockTile` / 最近文档）、drag & drop / `NSPasteboard`、Quick Look、`TextEditor` / TextKit、Unicode / IME / 本地化、启动性能。
+- **场景与文稿生命周期**（`MenuBarExtra`、`Settings` scene、`DocumentGroup` / `NSDocument` 与自动保存/版本浏览、窗口还原、Stage Manager、多显示器、Dock、Quick Look）：见 `native-scenes-and-documents.md`；
+- **输入、文本系统与本地化**（drag & drop / `Transferable` / `NSPasteboard`、`TextEditor` / TextKit、IME、String Catalogs、RTL、启动性能）：见 `native-input-and-localization.md`。
 
 ## 结构审查问题
 
@@ -195,4 +196,4 @@ Dialog：需要立即处理的重要决定。
 7. Window 缩小时是结构降级还是控件挤压？
 8. Menu/shortcut 与按钮状态是否一致？
 9. 多窗口时状态 ownership 是否正确？
-10. 是否误用了本 Skill 明确不覆盖的主题？
+10. 是否把场景 / 文稿 / 输入 / 本地化主题错当成结构问题？（转 `native-scenes-and-documents.md` 与 `native-input-and-localization.md`）

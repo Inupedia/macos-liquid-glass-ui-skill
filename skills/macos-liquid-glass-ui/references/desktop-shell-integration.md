@@ -89,6 +89,8 @@ app.whenReady().then(() => {
 
 `effects` 里第二个值是 macOS 15 及以下的回退材质：官方说明**一般冲突效果只应用第一个，但 macOS 上可以同时给一个 Liquid Glass 样式和一个 Visual Effect 材质**，让旧系统落到后者。
 
+**只用核心 API。** 社区里的第三方插件（如 `tauri-plugin-liquid-glass` 一类）不是官方 API，版本兼容与 App Store 审核都无法由 Tauri 官方保证；核心 `windowEffects` 已经覆盖 Liquid Glass 与 Visual Effect，先用它，不要为了省几行配置引入插件。
+
 ### 3.2 权限（不配就是运行时被拒）
 
 `setEffects` / `clearEffects` 需要 `core:window:allow-set-effects`，它**不在 `core:window:default` 里**。

@@ -78,9 +78,11 @@ Liquid Glass 专项性能：同屏自定义 glass 数量与容器覆盖率，并
 
 - SwiftUI 与 AppKit 实现策略、API 签名与版本合同：`references/swiftui-appkit.md`
 - 窗口、Toolbar、Sidebar、Search、Commands 结构 API：`references/native-structure.md`
+- 场景与文稿生命周期（`MenuBarExtra`、`Settings`、`DocumentGroup` / `NSDocument`、窗口还原、Stage Manager、多显示器、Dock、Quick Look）：`references/native-scenes-and-documents.md`
+- 输入、文本系统与本地化（拖放 / `Transferable`、`NSPasteboard`、`TextEditor` / TextKit、IME、String Catalogs、RTL、启动性能）：`references/native-input-and-localization.md`
 - 原生验收清单与交付模板：`references/validation.md`
 
-若需要 Web 视觉 token、Web page archetype 或 CSS fallback，不要混进本 Skill；转到 `macos-liquid-glass-ui`。
+若需要 Web 视觉 token、Web page archetype 或 CSS fallback，不要混进本 Skill；转到 `macos-liquid-glass-ui`。App Icon / 产品图标转到 `macos-liquid-glass-icon`。
 
 ## 交付要求
 
@@ -88,9 +90,15 @@ Liquid Glass 专项性能：同屏自定义 glass 数量与容器覆盖率，并
 
 不要声称手工参数是 Apple 官方固定值。官方行为以当前 SDK 和 Apple 文档为准。
 
-## 明确不覆盖
+## 边界
 
-`MenuBarExtra`、`Settings` scene（⌘,）、`DocumentGroup` / `NSDocument` 与自动保存/版本浏览、窗口还原、Stage Manager、多显示器、Dock、drag & drop / `NSPasteboard`、Quick Look、`TextEditor` / TextKit、Unicode / IME / 本地化、启动性能：这些主题本 Skill 不给规则，需要时按 Apple 官方文档处理。
+本 Skill 覆盖三块：
+
+1. **材质与实现**：`swiftui-appkit.md`（API 签名、版本合同、禁止→替代 API、辅助功能键）；
+2. **结构与场景**：`native-structure.md`（窗口、Toolbar、Sidebar、Inspector、Search、Commands）、`native-scenes-and-documents.md`（`MenuBarExtra`、`Settings`、文稿生命周期、窗口还原、多显示器、Dock、Quick Look）；
+3. **输入与本地化**：`native-input-and-localization.md`（拖放、剪贴板、文本编辑、IME、String Catalogs、格式化、RTL）。
+
+仍不在本 Skill 范围内的：具体业务领域 UI（图表库、媒体编解码、网络层）、Web 前端实现、App Icon 绘制。需要时按 Apple 官方文档或对应 Skill 处理。
 
 ## 官方参考
 

@@ -263,12 +263,19 @@ Table、Chart 和正文保持稳定内容层，Liquid Glass 主要用于 Toolbar
 ## 核心原则
 
 - 标准组件优先；
-- Toolbar / Navigation / system controls 已经获得系统外观时，不重复叠 glass；
+- Toolbar / Navigation / system controls 已经获得系统外观时，不重复叠 glass —— 并给出替代 API；
 - 内容区不整块 glass；
 - Commands / Menu / Toolbar / Keyboard shortcut 状态一致；
 - Window resize 是默认前提；
 - 多窗口时区分 app-global 与 window-local state；
-- 自定义控件响应系统 accessibility 环境。
+- 自定义控件响应系统 accessibility 环境（读 `accessibilityReduceTransparency` / `accessibilityShowBorders` 等环境键，而不是只说"要响应"）。
+
+## 版本合同
+
+- macOS 26.0+ 的 API 单独成表：`glassEffect(_:in:)`、`GlassEffectContainer`、`glassEffectID`、`Glass.tint/.interactive`、`ButtonStyle.glass`、`NSGlassEffectView`、`ToolbarSpacer`、`ConcentricRectangle` 等；
+- 用 `if #available(macOS 26.0, *)` 分支，并为旧系统保留可用外观；
+- 用最新 SDK 构建但想保持旧外观时使用 `UIDesignRequiresCompatibility`；
+- Apple 的原始口径是**减少**自定义背景（"Reduce your use of custom backgrounds in controls and navigation elements"），AppKit 老项目的正确动作通常是先删旧 vibrancy 再考虑 `NSGlassEffectView`。
 
 ## 示例 Prompt
 
@@ -299,10 +306,12 @@ Increase Contrast、Show Borders 和多窗口状态，并报告实际验证范�
 4. 冻结 2–4 层 layer system；
 5. 冻结 HEX palette；
 6. 使用宿主图像生成；
-7. 小尺寸 QA；
-8. 给出 Icon Composer layer map。
+7. 小尺寸 QA（1024 看材质、256 看构图、64/32 看轮廓、16 保住主轮廓）；
+8. 给出 Icon Composer 交付：**单个多层文件**拖入 Xcode、App Icons 名称 = 去掉扩展名的文件名、导出前移除背景色与渐变、6 种外观（clear / tinted 在 Mono → Options）各自验收。
 
-不调用第三方图像 API，不要求 API Key。
+生产规格只覆盖 **iOS / iPadOS / macOS 的 1024×1024 方形分层图标**；tvOS（800×480 矩形）、watchOS（1088×1088）与 visionOS 规格不同，不套用这套基线。
+
+不调用第三方图像 API，不要求 API Key；没有图像生成工具时只交付 brief、style spec、最终 prompt 与验收清单，并明确尚未生成图片。
 
 ## Generated Example — Chinese Zodiac
 
@@ -368,6 +377,8 @@ skills/
 │   └── references/
 │       ├── swiftui-appkit.md
 │       ├── native-structure.md
+│       ├── native-scenes-and-documents.md
+│       ├── native-input-and-localization.md
 │       └── validation.md
 │
 └── macos-liquid-glass-icon/
@@ -427,7 +438,7 @@ Skill 入口负责：
 {"id":"web-003","prompt":"给地图应用设计 Liquid Glass 控制层。","expected_skill":"macos-liquid-glass-ui","must_include":["glass-clear","floating controls","rich background contrast"],"must_not":["glass map canvas"]}
 ```
 
-当前 70 个 fixture，覆盖：
+当前 76 个 fixture，覆盖：
 
 - Web vs Native vs Icon 路由与移交；
 - 全页玻璃化、glass-on-glass、三栏滥用；
@@ -442,7 +453,8 @@ Skill 入口负责：
 - Electron / Tauri 窗口原生材质优先与降级；
 - Inspira UI 特效堆叠与性能预算；
 - 原生 SwiftUI 系统组件优先、`glassEffect` / `GlassEffectContainer`、macOS 26 版本合同、raw `glassEffect` 滥用、多窗口 state ownership；
-- App Icon 隐喻 / 轮廓冻结、图标家族一致性、6 种外观、16px 小尺寸、Icon Composer 单多层文件交付、无图像工具时不伪造结果、不接外部图像 API。
+- 原生场景与文档生命周期（`MenuBarExtra` / `Settings` / `DocumentGroup` / 窗口还原）、输入与本地化（拖放 / `Transferable` / IME / String Catalogs / RTL）；
+- App Icon 隐喻 / 轮廓冻结、图标家族一致性、6 种外观、16px 小尺寸、Icon Composer 单多层文件交付、跨平台画布规格、无图像工具时不伪造结果、不接外部图像 API。
 
 两种用法：
 

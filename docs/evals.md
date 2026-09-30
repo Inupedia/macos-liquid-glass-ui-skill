@@ -109,6 +109,20 @@ python3 scripts/run_evals.py --agent-cmd ./agent.sh --out /tmp/run.jsonl --keywo
 python3 scripts/run_evals.py --responses /tmp/run.jsonl --keyword   # no network
 ```
 
+Copy-paste starting points for the three adapters live in `scripts/examples/`:
+`agent.sh` (answer the prompt), `judge.sh` (grade a case, with the rubric
+inlined) and `route.sh` (trigger test). Each defaults to `AGENT_CMD="claude -p"`
+and takes `AGENT_CMD` from the environment, so they work with any CLI that reads
+stdin and prints stdout:
+
+```bash
+AGENT_CMD="codex exec --skip-git-repo-check -" \
+  python3 scripts/run_evals.py --route-cmd ./scripts/examples/route.sh
+```
+
+For `--agent-cmd`, install the skill under test first — otherwise you measure
+the model, not the skill.
+
 ## Trigger tests are separate
 
 Answer quality and trigger quality fail differently. A skill can answer a
