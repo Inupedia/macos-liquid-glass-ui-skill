@@ -8,12 +8,14 @@ plus the two scripts in `scripts/` exist to catch that.
 
 | Script | Purpose | Blocking |
 | --- | --- | --- |
-| `scripts/validate_skills.py` | Structure, frontmatter, reference integrity, eval schema, routing coverage | Yes (CI, `--strict`) |
+| `scripts/validate_skills.py` | Structure, frontmatter, reference integrity, token consistency, eval schema, routing coverage | Yes (CI, `--strict`) |
 | `scripts/run_evals.py` | Actually scores agent answers against the fixtures | Run manually / in your own harness |
+| `tests/` | Unit tests for both scripts (validator findings, negation-aware scoring, skip handling) | Yes (CI) |
 
 ```bash
-python3 scripts/validate_skills.py --strict     # fails on errors and warnings
-python3 scripts/run_evals.py --list             # what is covered
+python3 -m unittest discover -s tests       # tests for the two scripts
+python3 scripts/validate_skills.py --strict # fails on errors and warnings
+python3 scripts/run_evals.py --list         # what is covered
 python3 scripts/run_evals.py --route-cmd ./route.sh    # trigger test
 python3 scripts/run_evals.py --agent-cmd ./agent.sh --judge-cmd ./judge.sh
 ```

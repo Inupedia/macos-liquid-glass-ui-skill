@@ -56,7 +56,13 @@ def load_cases(skills: list[str] | None, ids: list[str] | None) -> list[dict]:
                 if not raw.strip():
                     continue
                 case = json.loads(raw)
-                case["_source"] = f"{jsonl.relative_to(ROOT)}:{line_no}"
+                try:
+                    location = jsonl.relative_to(ROOT)
+                except ValueError:
+                    # The skill tree may live outside the repository root when
+                    # the runner is embedded or tested against a fixture tree.
+                    location = jsonl
+                case["_source"] = f"{location}:{line_no}"
                 case["_owner"] = skill_dir.name
                 cases.append(case)
     if ids:

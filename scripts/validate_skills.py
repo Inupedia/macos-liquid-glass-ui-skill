@@ -159,6 +159,11 @@ def main() -> int:
     parser.add_argument("--json", action="store_true", help="print a JSON report")
     args = parser.parse_args()
 
+    # Repeated programmatic calls (tests, embedding) must not inherit the
+    # previous run's findings.
+    errors.clear()
+    warnings.clear()
+
     if not SKILLS_DIR.is_dir():
         print("error: missing skills/ directory", file=sys.stderr)
         return 1

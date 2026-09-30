@@ -338,8 +338,11 @@ Increase Contrast、Show Borders 和多窗口状态，并报告实际验证范�
 
 ```text
 scripts/
-├── validate_skills.py          # 结构 / 引用 / eval fixture 校验（CI 入口）
-└── run_evals.py                # eval 运行器：评分、触发测试、录制回归
+├── validate_skills.py          # 结构 / 引用 / token / eval fixture 校验（CI 入口）
+├── run_evals.py                # eval 运行器：评分、触发测试、录制回归
+└── examples/                   # agent / judge / route 三个适配脚本模板
+
+tests/                          # 上面两个脚本的单元测试（CI 必跑）
 
 docs/
 └── evals.md                    # fixture schema、评分模式、覆盖率要求
@@ -397,7 +400,8 @@ skills/
 # 本地校验
 
 ```bash
-python3 scripts/validate_skills.py --strict   # 结构、引用、frontmatter、eval schema
+python3 -m unittest discover -s tests        # 校验器 / 运行器自身的单元测试
+python3 scripts/validate_skills.py --strict   # 结构、引用、frontmatter、token、eval schema
 python3 scripts/run_evals.py --list           # 查看当前 eval 覆盖
 python3 scripts/run_evals.py --routing        # 描述文字层面的路由提示（不是真实触发测试）
 ```
@@ -467,7 +471,7 @@ fixture 写法与评分细节见 [docs/evals.md](docs/evals.md)。发现新失�
 
 # CI
 
-`.github/workflows/validate-skills.yml` 调用 `scripts/validate_skills.py --strict`，检查：
+`.github/workflows/validate-skills.yml` 先跑 `python3 -m unittest discover -s tests`（校验器与运行器自身的单元测试），再用 `scripts/validate_skills.py --strict` 检查：
 
 - 每个 Skill 是否有 `SKILL.md`、`agents/openai.yaml`、`references/` 和 `evals/`；
 - frontmatter 是否只有 `name` / `description`，`name` 是否与目录一致且符合命名规范；
