@@ -220,6 +220,11 @@ Agent 应先选择主范式，再画布局，而不是默认所有产品三栏�
 - ECharts / Chart.js / D3
 - Electron / Tauri
 
+此外包含两块独立主题：
+
+- **桌面壳窗口材质**：Electron `vibrancy` / `backgroundMaterial`、Tauri v2 `setEffects()` 与 `Effect.LiquidGlassRegular|LiquidGlassClear`、权限、透明窗口、五级降级链；
+- **国际化与排版**：`lang` 属性、中西文混排、CJK 断行、逻辑属性与 RTL、tabular-nums、仅文字缩放。
+
 原则：**映射现有 token 和组件库，而不是为了换视觉重写业务架构。**
 
 ## 示例 Prompt
@@ -323,6 +328,13 @@ Increase Contrast、Show Borders 和多窗口状态，并报告实际验证范�
 # 仓库结构
 
 ```text
+scripts/
+├── validate_skills.py          # 结构 / 引用 / eval fixture 校验（CI 入口）
+└── run_evals.py                # eval 运行器：评分、触发测试、录制回归
+
+docs/
+└── evals.md                    # fixture schema、评分模式、覆盖率要求
+
 skills/
 ├── macos-liquid-glass-ui/
 │   ├── SKILL.md
@@ -330,7 +342,8 @@ skills/
 │   ├── assets/
 │   │   └── foundation.css
 │   ├── evals/
-│   │   └── core.jsonl
+│   │   ├── core.jsonl
+│   │   └── inspira-ui.jsonl
 │   └── references/
 │       ├── visual-system.md
 │       ├── materials-and-optics.md
@@ -342,6 +355,9 @@ skills/
 │       ├── page-archetypes.md
 │       ├── anti-patterns.md
 │       ├── implementation-adapters.md
+│       ├── desktop-shell-integration.md
+│       ├── i18n-and-typography.md
+│       ├── inspira-ui.md
 │       └── validation.md
 │
 ├── macos-liquid-glass-native-ui/
@@ -357,11 +373,34 @@ skills/
 └── macos-liquid-glass-icon/
     ├── SKILL.md
     ├── agents/openai.yaml
+    ├── evals/
+    │   └── core.jsonl
     └── references/
         ├── icon-system.md
         ├── prompt-template.md
         └── validation.md
 ```
+
+---
+
+# 本地校验
+
+```bash
+python3 scripts/validate_skills.py --strict   # 结构、引用、frontmatter、eval schema
+python3 scripts/run_evals.py --list           # 查看当前 eval 覆盖
+python3 scripts/run_evals.py --routing        # 描述文字层面的路由提示（不是真实触发测试）
+```
+
+真实触发测试与答案评分需要接你自己的 agent：
+
+```bash
+python3 scripts/run_evals.py --route-cmd ./route.sh            # 只回答"该加载哪个 skill"
+python3 scripts/run_evals.py --agent-cmd ./agent.sh \
+  --judge-cmd ./judge.sh --out /tmp/run.jsonl                  # 语义评分并录制
+python3 scripts/run_evals.py --responses /tmp/run.jsonl --keyword   # 离线回归
+```
+
+细节见 [docs/evals.md](docs/evals.md)。
 
 ---
 
@@ -382,42 +421,58 @@ Skill 入口负责：
 
 # Evals
 
-仓库包含行为 eval fixtures，用于防止 Skill 越写越长但能力反而退化。
+仓库包含行为 eval fixtures，用于防止 Skill 越写越长但能力反而退化。每个 fixture 是一个真实用户请求 + 期望命中的 skill + 必须出现的行为 + 必须不出现的失败模式：
 
-当前覆盖示例包括：
+```json
+{"id":"web-003","prompt":"给地图应用设计 Liquid Glass 控制层。","expected_skill":"macos-liquid-glass-ui","must_include":["glass-clear","floating controls","rich background contrast"],"must_not":["glass map canvas"]}
+```
 
-- Web vs Native vs Icon 路由；
-- 全页玻璃化；
-- glass-clear 使用条件；
-- Table / Chart 内容层；
-- 稳定底部操作；
-- 200% 缩放；
-- 滚动条系统偏好；
+当前 70 个 fixture，覆盖：
+
+- Web vs Native vs Icon 路由与移交；
+- 全页玻璃化、glass-on-glass、三栏滥用；
+- glass-clear 使用条件与对比度判定线；
+- Table / Chart 内容层与刷新时的内容稳定性；
+- 稳定底部操作、短屏与 200% 缩放、**仅文字放大**；
+- 滚动条系统偏好、CJK 文本、RTL、键盘焦点；
+- 装饰边界与必要边界的区分、深色主题下的边界与图表系列色；
 - 假 traffic lights / Dock；
-- Chat / Agent 工作台；
-- SwiftUI raw glassEffect 滥用；
-- Toolbar command parity；
-- 多窗口 state ownership；
-- Accessibility。
+- Chat / Agent 工作台与流式稳定性；
+- 玻璃层数 / 帧率性能预算；
+- Electron / Tauri 窗口原生材质优先与降级；
+- Inspira UI 特效堆叠与性能预算；
+- 原生 SwiftUI 系统组件优先、`glassEffect` / `GlassEffectContainer`、macOS 26 版本合同、raw `glassEffect` 滥用、多窗口 state ownership；
+- App Icon 隐喻 / 轮廓冻结、图标家族一致性、6 种外观、16px 小尺寸、Icon Composer 单多层文件交付、无图像工具时不伪造结果、不接外部图像 API。
 
-Evals 目前是可检查的 JSONL 测试资产，可继续接入 Agent runner 做自动评分。
+两种用法：
+
+- `scripts/validate_skills.py`：离线确定性校验，**每次 PR 都跑**，防止引用、fixture schema 和路由覆盖悄悄坏掉。
+- `scripts/run_evals.py`：接 agent 后做真实评分与触发测试，并可把一次运行录制为回归基线。
+
+fixture 写法与评分细节见 [docs/evals.md](docs/evals.md)。发现新失败模式时补一条 fixture，让同一个 bug 不会静默回归。
 
 ---
 
 # CI
 
-`.github/workflows/validate-skills.yml` 会检查：
+`.github/workflows/validate-skills.yml` 调用 `scripts/validate_skills.py --strict`，检查：
 
-- 每个 Skill 是否有 `SKILL.md`；
-- frontmatter `name` 是否与目录一致；
-- description 是否存在；
-- `agents/openai.yaml` 是否存在；
-- `SKILL.md` 引用的本地 references/assets 是否存在；
-- eval JSONL 是否能解析；
-- eval id 是否重复；
-- `expected_skill` 是否指向真实 Skill。
+- 每个 Skill 是否有 `SKILL.md`、`agents/openai.yaml`、`references/` 和 `evals/`；
+- frontmatter 是否只有 `name` / `description`，`name` 是否与目录一致且符合命名规范；
+- `description` 长度是否可用（≥20 且 ≤1024 字符）；
+- `agents/openai.yaml` 是否包含 `interface`、`display_name`、`short_description`、`default_prompt`；
+- `SKILL.md` 引用（反引号路径按 skill 根解析、markdown 链接按文件解析）是否存在；
+- `references/`、`assets/` 中是否有没被 `SKILL.md` 路由到的孤儿文件；
+- reference 之间互相引用是否存在；
+- eval JSONL 是否可解析、`id` 是否全仓唯一、必需字段是否齐全；
+- `must_include` 与 `must_not` 是否重叠（语义松紧由 judge 评分阶段负责，脚本不做主观判断）；
+- `aliases` 是否指向真实存在的 `must_include` 条目；
+- 每个 Skill 是否有 ≥3 条指向自己的 fixture；
+- 文档里提到的每个 `macos-liquid-glass-*` 是否都真实存在；
+- Web skill 文档里出现的每个 `--lg-*` token 是否都在 `assets/foundation.css` 中定义；
+- 每个 `SKILL.md` 是否写清何时移交另外两个 skill。
 
-它不替代视觉 QA，但可以避免文档路由和测试资产在仓库演进中悄悄坏掉。
+它不替代视觉 QA 和真实 agent 评分，但可以避免文档路由和测试资产在仓库演进中悄悄坏掉。
 
 ---
 
