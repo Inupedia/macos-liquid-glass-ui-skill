@@ -1,6 +1,6 @@
 ---
 name: macos-liquid-glass-ui
-description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、实现或审查 UI，提供材质语义、色板、窗口与导航、页面范式、完整组件覆盖、固定操作、滚动、响应式、可访问性、框架与 Inspira UI 适配和验收规范。适用于跨项目复用该风格，不默认替换其他品牌设计；原生 SwiftUI/AppKit 请求转用同仓库 native skill。
+description: 为选择 macOS / Apple Liquid Glass 风格的 Web、桌面 Web App 与 Electron/Tauri 产品设计、实现或审查 UI，提供材质语义与 clear 判定、色板、窗口与导航、页面范式、完整组件覆盖、固定操作、滚动、响应式、仅文字放大、可访问性与系统偏好降级、性能预算、框架与 Inspira UI 适配、桌面壳窗口原生材质、中文/RTL 排版和验收规范。适用于跨项目复用该风格，不默认替换其他品牌设计；原生 SwiftUI/AppKit 请求转用同仓库 native skill，App Icon 请求转用 icon skill。
 ---
 
 # macOS Liquid Glass UI
@@ -44,6 +44,8 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 7. **状态真实。** 加载、空态、错误、部分成功和结果沿用稳定框架；不编造完成进度或数据。
 8. **平台感来自行为，不来自装饰。** 不添加无功能红黄绿按钮、假 Dock、过度胶囊或满屏玻璃。
 9. **第三方效果服从设计系统。** Inspira UI、Aceternity/Magic UI 类组件只能增强局部表达，不重新定义全局 tokens、交互模型或页面骨架。
+10. **桌面壳里窗口材质优先。** Electron / Tauri 产品先考虑系统窗口材质（vibrancy / mica / Tauri window effects）；页面内 backdrop-filter 只能模糊 WebView 自己绘制的内容，窗口不透明时"半透明页面"是假的。两者不要叠加成 glass-on-glass。
+11. **降级不能只靠媒体查询。** `prefers-reduced-transparency` 只有 Chromium 系支持（Safari / Firefox 未实现），所以默认状态本身必须可读，`prefers-contrast` / `forced-colors` 与实色基线要单独成立。
 
 ## 工作顺序
 
@@ -61,7 +63,9 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 
 ### 2. 选择材质
 
-先区分 `content-solid`、`glass-light`、`glass-regular`、`glass-clear`、`glass-thick`、`glass-tinted`。默认 regular，clear 只用于图片、视频、地图等视觉丰富背景上的少量控制。
+先区分 `content-solid`、`glass-light`、`glass-regular`、`glass-clear`、`glass-thick`、`glass-tinted`。默认 regular；clear 只用于图片、视频、地图等视觉丰富背景上的少量控制，并且必须通过判定线：按最坏背景帧计算合成色，正文对比 ≥4.5:1、必要图形 ≥3:1，不满足就加 scrim（不透明度 ≥.25）或退回 regular。实现时用 `[data-material]` 切换 `--lg-surface-material` / `--lg-blur-material`，材质值只来自 `assets/foundation.css`。
+
+是 Electron / Tauri 产品时，先判断能否用窗口原生材质承载；能承载就不要在页面里再画一层玻璃。
 
 ### 3. 套组件与状态
 
@@ -88,15 +92,20 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 对照 anti-patterns，重点排查：
 
 - 全页玻璃化；
-- glass-on-glass；
+- glass-on-glass（包含"窗口原生材质之上再叠页面玻璃"）；
 - 三栏滥用；
 - toolbar button soup；
 - 嵌套滚动；
 - 假 macOS chrome；
 - 关键错误只用 Toast；
 - 200% 仍强制原布局；
+- 只测页面缩放、不测仅文字放大；
+- 只在 Chromium 验证 reduce transparency，就当降级已完成；
+- 把装饰性 `--lg-border` / `--lg-separator` 当必要边界用（深色下尤其）；
+- 白字按钮压 `--lg-accent`；
+- 图表只用颜色区分系列，或深色主题没换系列色；
 - Inspira UI 多种特效同屏堆叠；
-- 为了“像 Mac”添加装饰性 Dock；
+- 为了"像 Mac"添加装饰性 Dock；
 - 动画替代真实 selected/focus/error 状态。
 
 ### 6. 验证
@@ -105,14 +114,18 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 
 - 长内容展开后的按钮位置；
 - 窗口高度/宽度变化；
-- 200% 缩放；
-- 键盘与焦点；
-- Reduce Motion / Transparency；
-- 图表容器尺寸变化；
+- 200% 页面缩放与**仅文字放大**；
+- 键盘与焦点（焦点环两侧对比度实测）；
+- Reduce Motion / Transparency（含 Safari 等不支持该媒体查询时的降级路径）；
+- `prefers-contrast: more` 与 `forced-colors`；
+- `color-scheme` 是否让原生控件跟随主题；
+- 图表容器尺寸变化、深色主题系列色；
+- 玻璃层数与帧率是否在性能预算内；
 - 模态/菜单层级与焦点恢复；
+- 中文/多语言/RTL 下的换行、按钮位置与 `dir` 行为；
 - 第三方动效在 offscreen、touch、SSR/hydration 和 cleanup 场景的行为。
 
-使用环境允许的浏览器工具；不依赖特定插件。构建通过不等于视觉验收。
+使用环境允许的浏览器工具；不依赖特定插件。构建通过不等于视觉验收，浏览器预览也不等于桌面壳验收。
 
 ## 资源路由
 
@@ -129,8 +142,10 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - **生成/审查前的负向约束**：`references/anti-patterns.md`
 - **Vanilla/Vue/Element Plus/React/Tailwind/图表/Electron 实施**：`references/implementation-adapters.md`
 - **Inspira UI × Liquid Glass 选型、安装、适配、动效与性能约束**：`references/inspira-ui.md`
+- **Electron / Tauri 窗口原生材质、权限、降级链**：`references/desktop-shell-integration.md`
+- **中西文混排、CJK 断行、逻辑属性与 RTL、文字缩放**：`references/i18n-and-typography.md`
 - **实现/审查验收**：`references/validation.md`
-- **起步样式**：`assets/foundation.css`，按现有 Token 转换；不是全局 reset，不直接替换现有样式。
+- **起步样式**：`assets/foundation.css`，按现有 Token 转换；不是全局 reset，不直接替换现有样式。它是全部 `--lg-*` token 的唯一定义源。
 
 ### 推荐组合
 
@@ -140,20 +155,23 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web 产品设计、�
 - **审查**：anti-patterns + 可访问性 + 布局滚动 + 验收，再按发现的问题读取具体模块。
 - **Dashboard / 数据产品**：视觉系统 + 材质 + components-and-states + component-matrix + 布局滚动 + 可访问性。
 - **地图/媒体/画布**：材质（重点 clear）+ window/navigation + page-archetypes + accessibility。
+- **Electron / Tauri 桌面产品**：desktop-shell-integration + 材质 + 布局滚动 + window/navigation + 实现适配 + 验收。
+- **中文 / 多语言 / RTL 产品**：i18n-and-typography + 视觉系统 + 布局滚动 + 可访问性。
 
 ## 交付要求
 
 完整规范须包含：
 
-- 色值与字体层级；
-- 材质选择理由；
+- 色值与字体层级（引用 `--lg-*` token，不重复十六进制）；
+- 材质选择理由（含 clear 判定计算）；
 - 页面范式与布局合同；
 - 导航、Toolbar、Search、Sidebar/Inspector 规则；
-- 滚动条、溢出、固定操作；
+- 滚动条、溢出、固定操作、层级；
 - 组件与关键状态；
-- Accessibility；
+- Accessibility（含仅文字放大、Safari 降级路径、对比度实测值）；
+- 性能预算（层数、帧率、测量方法）；
 - Anti-pattern 检查；
-- 验收矩阵。
+- 验收矩阵（含视口 → 断点命中关系）。
 
 如果使用 Inspira UI，额外说明：
 

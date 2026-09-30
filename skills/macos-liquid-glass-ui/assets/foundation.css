@@ -1,31 +1,253 @@
-/* Optional scoped Web baseline; adapt to the project's existing token system. */
+/* Optional scoped Web baseline; adapt to the project's existing token system.
+ *
+ * This file is the single source of truth for the `--lg-*` names used across
+ * this skill's references. Two rules keep it usable:
+ *   1. Never hardcode a value that already has a token here — read the token.
+ *   2. Material is a two-variable contract: `--lg-surface-material` (color) and
+ *      `--lg-blur-material` (blur radius). Change those, not the class.
+ *
+ * Verified values in comments are WCAG 2.x contrast ratios measured against the
+ * exact hex pairs written here.
+ */
+
 .lg-theme {
+  /* ---- structure ------------------------------------------------------- */
   --lg-bg: #f5f5f7;
+  --lg-bg-secondary: #eceef2;
   --lg-surface: #fff;
+  --lg-surface-secondary: #f8f9fb;
   --lg-text: #1d1d1f;
-  --lg-muted: #62626a;
+  --lg-text-secondary: #62626a;
+  --lg-text-tertiary: #85858e;
+  --lg-muted: var(--lg-text-secondary); /* legacy alias */
+
+  /* ---- boundaries ------------------------------------------------------ */
+  /* border/separator are decorative dividers (1.2–1.4:1) and must NOT carry a
+   * 3:1 requirement. Anything that has to be perceivable (form field outline,
+   * selected container, focus container) uses --lg-border-strong. */
+  --lg-border: #dcdde3;
+  --lg-border-strong: #6e7076; /* 4.95:1 on --lg-surface */
   --lg-separator: #e8e9ee;
-  --lg-accent: #007aff;
+  --lg-edge: rgba(255, 255, 255, .75);
+  --lg-glass-edge: var(--lg-edge); /* alias used by some references */
+  --lg-scrim: rgba(15, 18, 24, .28);
+
+  /* ---- accent ---------------------------------------------------------- */
+  --lg-accent: #007aff;        /* 3.69:1 on --lg-bg: rings/icons/borders only */
+  --lg-accent-hover: #006be0;
+  --lg-accent-pressed: #005bc4;
+  --lg-accent-soft: #eaf3ff;
+  --lg-accent-text: #005fcc;
+  /* White-on-accent needs this darker value: --lg-button + white = 5.02:1.
+   * Never set white text on --lg-accent (4.02:1 — below 4.5:1). */
   --lg-button: #006be0;
   --lg-button-text: #fff;
-  --lg-glass: rgba(250, 251, 253, .78);
-  --lg-edge: rgba(255, 255, 255, .75);
+
+  /* ---- semantic status (text / tinted background) ---------------------- */
+  /* Every pair below is >= 4.5:1 so status text may be used at body size. */
+  --lg-success: #1b6b2f;  --lg-success-bg: #eaf6ed;  /* 5.92:1 */
+  --lg-warning: #8a5300;  --lg-warning-bg: #fff4df;  /* 5.80:1 */
+  --lg-danger: #c40012;   --lg-danger-bg: #fff0f1;   /* 5.66:1 */
+  --lg-info: #005fcc;     --lg-info-bg: #eaf3ff;     /* 5.35:1 */
+  --lg-neutral: #5a5a62;  --lg-neutral-bg: #eff0f3;  /* 6.00:1 */
+
+  /* ---- charts ---------------------------------------------------------- */
+  /* Light series: >= 3:1 on --lg-surface for every entry. Pair every series
+   * with a marker or dash pattern; color alone is not an encoding. */
+  --lg-chart-1: #0a63b0; /* 6.13:1 */
+  --lg-chart-2: #14706b; /* 5.90:1 */
+  --lg-chart-3: #5b57a8; /* 6.22:1 */
+  --lg-chart-4: #8a5a12; /* 5.91:1 */
+  --lg-chart-5: #a83a5c; /* 6.13:1 */
+  --lg-chart-grid: #e7eef5; /* decorative only, exempt from 3:1 */
+
+  /* ---- material -------------------------------------------------------- */
+  --lg-content: #fff;
+  --lg-glass-light: rgba(255, 255, 255, .62);
+  --lg-glass-regular: rgba(250, 251, 253, .78);
+  --lg-glass-clear: rgba(255, 255, 255, .42);
+  --lg-glass-thick: rgba(250, 251, 253, .92);
+  --lg-glass-tinted: rgba(234, 243, 255, .82);
+  --lg-glass: var(--lg-glass-regular); /* legacy alias */
+  --lg-blur-light: 20px;
+  --lg-blur-regular: 24px;
+  --lg-blur-thick: 32px;
+  --lg-blur: var(--lg-blur-regular); /* legacy alias */
+  --lg-saturation: 140%;
+  /* Live material — what .lg-glass actually paints with. */
+  --lg-surface-material: var(--lg-glass-regular);
+  --lg-blur-material: var(--lg-blur-regular);
+
+  /* ---- elevation ------------------------------------------------------- */
+  --lg-shadow-light: 0 2px 8px rgba(25, 40, 65, .04);
+  --lg-shadow-float: 0 8px 28px rgba(25, 40, 65, .08);
+  --lg-shadow-modal: 0 24px 64px rgba(25, 40, 65, .16);
+
+  /* ---- spacing scale (4px base, includes 20px) ------------------------- */
+  --lg-space-1: 4px;  --lg-space-2: 8px;  --lg-space-3: 12px; --lg-space-4: 16px;
+  --lg-space-5: 20px; --lg-space-6: 24px; --lg-space-7: 32px; --lg-space-8: 48px;
+  --lg-space-9: 64px;
+
+  /* ---- radius scale ---------------------------------------------------- */
+  --lg-radius-xs: 8px;  /* tags, chips */
+  --lg-radius-sm: 12px; /* inputs, buttons */
+  --lg-radius-md: 16px; /* menus, popovers */
+  --lg-radius-lg: 24px; /* panels, glass containers */
+  --lg-radius-xl: 28px; /* modals */
+  --lg-radius-pill: 999px;
+
+  /* ---- control and region sizes ---------------------------------------- */
+  --lg-control-h-sm: 32px;
+  --lg-control-h-md: 40px;
+  --lg-control-h-lg: 48px;
+  --lg-input-h: 44px;
+  --lg-row-h: 48px;              /* table rows stay within 44–52px */
+  --lg-switch-w: 36px;
+  --lg-switch-h: 22px;
+  --lg-sidebar-width: 280px;     /* 240–320px */
+  --lg-inspector-width: 320px;   /* 260–360px */
+  /* Measured height of the sticky action bar. Update it to the real rendered
+   * height when you use .lg-actions-sticky, so scroll-padding can clear it. */
+  --lg-actions-height: 72px;
+
+  /* ---- type scale (px values are deliberate; see i18n-and-typography.md) */
+  --lg-text-display: 48px;     --lg-leading-display: 1.15;
+  --lg-text-page-title: 32px;  --lg-leading-page-title: 1.25;
+  --lg-text-section: 22px;     --lg-leading-section: 1.35;
+  --lg-text-card-title: 17px;  --lg-leading-card-title: 1.4;
+  --lg-text-body: 15px;        --lg-leading-body: 1.6;
+  --lg-text-aux: 13px;         --lg-leading-aux: 1.5;
+  --lg-text-button: 14px;      --lg-leading-button: 1.3;
+  --lg-text-metric: 32px;      --lg-leading-metric: 1.15;
+  --lg-weight-regular: 400; --lg-weight-medium: 500; --lg-weight-semibold: 600;
+
+  /* ---- motion ---------------------------------------------------------- */
+  --lg-dur-press: 120ms;
+  --lg-dur-hover: 150ms;
+  --lg-dur-select: 200ms;
+  --lg-dur-panel: 240ms;
+  --lg-dur-content: 280ms;
+  --lg-ease: cubic-bezier(.2, .8, .2, 1);
+
+  /* ---- focus ----------------------------------------------------------- */
+  --lg-focus-ring-width: 3px;
+  --lg-focus-ring-offset: 2px;
+  --lg-focus-ring: var(--lg-accent);
+  --lg-focus-halo: var(--lg-surface); /* 1px separation ring against glass */
+
+  /* ---- layering -------------------------------------------------------- */
+  --lg-z-content: 0;
+  --lg-z-sticky: 20;
+  --lg-z-menu: 30;
+  --lg-z-drawer: 40;
+  --lg-z-modal: 50;
+  --lg-z-toast: 60;
+
+  --lg-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "PingFang SC", "Helvetica Neue", "Segoe UI", sans-serif;
+
+  color-scheme: light;
   color: var(--lg-text);
   background: var(--lg-bg);
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", sans-serif;
+  font-family: var(--lg-font);
+  font-size: var(--lg-text-body);
+  line-height: var(--lg-leading-body);
 }
+
 .lg-theme[data-theme="dark"] {
   --lg-bg: #16181d;
+  --lg-bg-secondary: #1c1f25;
   --lg-surface: #22252c;
+  --lg-surface-secondary: #2b2f38;
   --lg-text: #f5f5f7;
-  --lg-muted: #b5b8c2;
+  --lg-text-secondary: #b5b8c2;
+  --lg-text-tertiary: #969ba8;
+
+  --lg-border: #424854;
+  --lg-border-strong: #9aa0ac; /* 5.84:1 on --lg-surface */
   --lg-separator: #363b46;
-  --lg-accent: #409cff;
+  --lg-edge: rgba(255, 255, 255, .12);
+  --lg-scrim: rgba(0, 0, 0, .38);
+
+  --lg-accent: #409cff; /* 6.27:1 on --lg-bg */
+  --lg-accent-hover: #63aeff;
+  --lg-accent-pressed: #2485ec;
+  --lg-accent-soft: #203b58;
+  --lg-accent-text: #79baff;
   --lg-button: #409cff;
   --lg-button-text: #101b29;
-  --lg-glass: rgba(35, 39, 48, .82);
-  --lg-edge: rgba(255, 255, 255, .12);
+
+  --lg-success: #76d892;  --lg-success-bg: #183b27;  /* 7.09:1 */
+  --lg-warning: #f4c56c;  --lg-warning-bg: #44331c;  /* 7.52:1 */
+  --lg-danger: #ff929b;   --lg-danger-bg: #46232a;   /* 6.41:1 */
+  --lg-info: #79baff;     --lg-info-bg: #203b58;     /* 5.62:1 */
+  --lg-neutral: #b5b8c2;  --lg-neutral-bg: #2b2f38;  /* 6.77:1 */
+
+  /* Dark series: >= 3:1 on --lg-surface (#22252C). */
+  --lg-chart-1: #5aa9f0; /* 6.11:1 */
+  --lg-chart-2: #4fc3b8; /* 7.18:1 */
+  --lg-chart-3: #a9a5e8; /* 6.75:1 */
+  --lg-chart-4: #e0b36a; /* 7.91:1 */
+  --lg-chart-5: #ee8fa8; /* 6.67:1 */
+  --lg-chart-grid: #2f343d;
+
+  --lg-glass-light: rgba(45, 50, 60, .62);
+  --lg-glass-regular: rgba(35, 39, 48, .82);
+  --lg-glass-clear: rgba(30, 34, 42, .48);
+  --lg-glass-thick: rgba(28, 32, 40, .94);
+  --lg-glass-tinted: rgba(32, 59, 88, .86);
+
+  --lg-shadow-light: 0 2px 8px rgba(0, 0, 0, .28);
+  --lg-shadow-float: 0 8px 28px rgba(0, 0, 0, .38);
+  --lg-shadow-modal: 0 24px 64px rgba(0, 0, 0, .5);
+
+  --lg-focus-halo: var(--lg-bg);
+  color-scheme: dark;
 }
+
+/* ---------------------------------------------------------------------------
+ * Material variants. Set data-material once; the two live variables follow.
+ * ------------------------------------------------------------------------ */
+.lg-glass {
+  background: var(--lg-surface-material);
+  border: 1px solid var(--lg-edge);
+  border-radius: var(--lg-radius-lg);
+  box-shadow: var(--lg-shadow-float);
+  -webkit-backdrop-filter: blur(var(--lg-blur-material)) saturate(var(--lg-saturation));
+  backdrop-filter: blur(var(--lg-blur-material)) saturate(var(--lg-saturation));
+  min-width: 0;
+}
+
+[data-material="light"] {
+  --lg-surface-material: var(--lg-glass-light);
+  --lg-blur-material: var(--lg-blur-light);
+}
+[data-material="regular"] {
+  --lg-surface-material: var(--lg-glass-regular);
+  --lg-blur-material: var(--lg-blur-regular);
+}
+[data-material="clear"] {
+  --lg-surface-material: var(--lg-glass-clear);
+  --lg-blur-material: var(--lg-blur-light);
+  /* Clear only survives over a visually rich background. When the content
+   * behind it can reach mid luminance (L* 20–80), add .lg-glass-scrim or the
+   * composited background can fall below 4.5:1 for body text. */
+}
+[data-material="thick"] {
+  --lg-surface-material: var(--lg-glass-thick);
+  --lg-blur-material: var(--lg-blur-thick);
+}
+[data-material="tinted"] {
+  --lg-surface-material: var(--lg-glass-tinted);
+  --lg-blur-material: var(--lg-blur-regular);
+}
+.lg-glass-scrim {
+  background-image: linear-gradient(var(--lg-scrim), var(--lg-scrim));
+}
+
+/* ---------------------------------------------------------------------------
+ * Regions. These are the classes the layout references point at.
+ * ------------------------------------------------------------------------ */
 .lg-workspace {
   box-sizing: border-box;
   height: 100dvh;
@@ -33,66 +255,256 @@
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
 }
+
 .lg-panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   min-width: 0;
   min-height: 0;
 }
+
+.lg-toolbar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--lg-z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--lg-space-2);
+  min-height: var(--lg-control-h-lg);
+  padding-block: var(--lg-space-2);
+  padding-inline: var(--lg-space-4);
+  border-block-end: 1px solid var(--lg-separator);
+  background: var(--lg-glass-regular);
+  -webkit-backdrop-filter: blur(var(--lg-blur-regular)) saturate(var(--lg-saturation));
+  backdrop-filter: blur(var(--lg-blur-regular)) saturate(var(--lg-saturation));
+}
+
+.lg-sidebar {
+  width: var(--lg-sidebar-width);
+  min-width: 240px;
+  max-width: 320px;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.lg-inspector {
+  width: var(--lg-inspector-width);
+  min-width: 260px;
+  max-width: 360px;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
 .lg-content-scroll {
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  scrollbar-gutter: stable;
   overscroll-behavior: contain;
-  scroll-padding-block: 1rem;
+  scroll-padding-block: var(--lg-space-4);
+  /* scrollbar-gutter is opt-in: see .lg-scroll-stable below. */
 }
+
+/* Opt-in only. `scrollbar-gutter: stable` reserves a classic-scrollbar-width
+ * gutter (~15px) even on macOS overlay scrollbars, which shifts content away
+ * from rounded glass edges. Enable it per-region when the layout would jump. */
+.lg-scroll-stable {
+  scrollbar-gutter: stable;
+}
+
 .lg-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
-  gap: .75rem;
-  padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--lg-separator);
+  gap: var(--lg-space-3);
+  padding-block: var(--lg-space-4);
+  padding-inline: var(--lg-space-5);
+  padding-block-end: calc(var(--lg-space-4) + env(safe-area-inset-bottom, 0px));
+  border-block-start: 1px solid var(--lg-separator);
   background: var(--lg-surface);
 }
-.lg-glass {
-  background: var(--lg-glass);
-  border: 1px solid var(--lg-edge);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 28px rgba(25, 40, 65, .08);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
-  backdrop-filter: blur(24px) saturate(140%);
+/* When the action bar becomes sticky, reserve its own height so the last field
+ * is never hidden underneath it. */
+.lg-actions-sticky {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: var(--lg-z-sticky);
 }
+.lg-actions-sticky + .lg-actions-spacer,
+.lg-scroll-under-actions {
+  scroll-padding-block-end: var(--lg-actions-height, 72px);
+}
+
+.lg-menu,
+.lg-popover {
+  z-index: var(--lg-z-menu);
+  border-radius: var(--lg-radius-md);
+  padding: var(--lg-space-1);
+  background: var(--lg-glass-thick);
+  border: 1px solid var(--lg-edge);
+  box-shadow: var(--lg-shadow-float);
+  -webkit-backdrop-filter: blur(var(--lg-blur-thick)) saturate(var(--lg-saturation));
+  backdrop-filter: blur(var(--lg-blur-thick)) saturate(var(--lg-saturation));
+}
+/* Menus inside a modal belong to the modal layer. Prefer a portal/teleport into
+ * the modal container; only fall back to this offset when that is impossible. */
+.lg-modal .lg-menu,
+.lg-modal .lg-popover {
+  z-index: calc(var(--lg-z-modal) + 1);
+}
+
+.lg-modal {
+  z-index: var(--lg-z-modal);
+  max-width: calc(100vw - var(--lg-space-7));
+  max-height: min(80dvh, 760px);
+  border-radius: var(--lg-radius-xl);
+  background: var(--lg-surface);
+  box-shadow: var(--lg-shadow-modal);
+}
+.lg-modal-backdrop {
+  z-index: var(--lg-z-modal);
+  background: var(--lg-scrim);
+}
+.lg-toast {
+  z-index: var(--lg-z-toast);
+}
+
 .lg-primary {
-  min-height: 2.75rem;
-  padding: .625rem 1.25rem;
+  min-height: var(--lg-control-h-md);
+  padding-block: var(--lg-space-2);
+  padding-inline: var(--lg-space-5);
   border: 0;
-  border-radius: .75rem;
+  border-radius: var(--lg-radius-sm);
   background: var(--lg-button);
   color: var(--lg-button-text);
   font: inherit;
-  font-weight: 600;
+  font-size: var(--lg-text-button);
+  font-weight: var(--lg-weight-semibold);
   cursor: pointer;
+  transition: background-color var(--lg-dur-hover) var(--lg-ease);
 }
-.lg-theme :focus-visible { outline: 3px solid var(--lg-accent); outline-offset: 3px; }
+.lg-primary:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+.lg-primary[data-size="lg"] { min-height: var(--lg-control-h-lg); }
+.lg-primary[data-size="sm"] { min-height: var(--lg-control-h-sm); }
+
+/* Focus is measurable, not just visible: the ring must reach 3:1 against both
+ * the element it sits on and the surface outside the offset. The halo is what
+ * separates it from glass of unknown colour. */
+.lg-theme :focus-visible {
+  outline: var(--lg-focus-ring-width) solid var(--lg-focus-ring);
+  outline-offset: var(--lg-focus-ring-offset);
+  box-shadow: 0 0 0 1px var(--lg-focus-halo);
+}
+
+.lg-num,
+.lg-tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
 /* Content-page alternative; do not combine with locked workspace mode. */
 .lg-document { min-height: 100dvh; }
+
+/* ---------------------------------------------------------------------------
+ * Degradation. Readability never depends on transparency or on a media query
+ * being supported.
+ * ------------------------------------------------------------------------ */
+
+/* No backdrop-filter: glass becomes a plain card that still reads as a card —
+ * background alone is not enough, the edge and shadow have to change too. */
 @supports not (backdrop-filter: blur(1px)) {
-  .lg-glass { background: var(--lg-surface); }
-}
-@media (prefers-reduced-transparency: reduce) {
-  .lg-glass {
+  .lg-glass,
+  .lg-toolbar,
+  .lg-menu,
+  .lg-popover {
     background: var(--lg-surface);
+    border-color: var(--lg-border);
+    box-shadow: var(--lg-shadow-light);
+  }
+}
+
+/* Chromium 119+. Firefox and Safari do not support this query (WebKit has
+ * declined it), so this block is an enhancement, never the only fallback:
+ * also verify the solid baseline with no media query active. */
+@media (prefers-reduced-transparency: reduce) {
+  .lg-glass,
+  .lg-toolbar,
+  .lg-menu,
+  .lg-popover,
+  [data-material] {
+    background: var(--lg-surface);
+    border-color: var(--lg-border);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 }
-/* Illustrative fallback: adapt breakpoints to the product's minimum sizes. */
+
+@media (prefers-contrast: more) {
+  .lg-theme {
+    --lg-separator: #7a7a85;
+    --lg-edge: rgba(0, 0, 0, .28);
+    --lg-border: #6e7076;
+    --lg-scrim: rgba(15, 18, 24, .52);
+  }
+  .lg-theme[data-theme="dark"] {
+    --lg-separator: #8a90a0;
+    --lg-edge: rgba(255, 255, 255, .34);
+    --lg-border: #9aa0ac;
+    --lg-scrim: rgba(0, 0, 0, .62);
+  }
+  .lg-glass,
+  .lg-toolbar,
+  .lg-menu,
+  .lg-popover {
+    border-color: var(--lg-edge);
+  }
+}
+
+@media (forced-colors: active) {
+  .lg-glass,
+  .lg-toolbar,
+  .lg-menu,
+  .lg-popover,
+  .lg-modal {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  .lg-primary { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; }
+  .lg-theme :focus-visible { outline: 2px solid Highlight; box-shadow: none; }
+}
+
+/* Reduced motion removes movement, not feedback: colour, opacity and <=130ms
+ * border changes survive so pressed/selected/error states stay legible. */
+@media (prefers-reduced-motion: reduce) {
+  .lg-theme *,
+  .lg-theme *::before,
+  .lg-theme *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Illustrative fallback: adapt breakpoints to the product's minimum sizes.
+ * Width branch: <= 767.84px. Height branch: <= 560px of usable height, which is
+ * what is left on a short window or after a soft keyboard opens. Neither branch
+ * fires at 1280x720 or 1024x768 — see references/validation.md for the mapping. */
 @media (max-width: 47.99rem), (max-height: 35rem) {
   .lg-workspace { height: auto; min-height: 100dvh; overflow: visible; }
   .lg-workspace .lg-panel { display: block; }
   .lg-workspace .lg-content-scroll { overflow: visible; }
-  .lg-workspace .lg-actions { position: sticky; bottom: 0; }
+  /* Back to normal flow: the action bar must not cover content now that the
+   * shell is no longer height-locked. */
+  .lg-workspace .lg-actions,
+  .lg-workspace .lg-actions-sticky { position: static; }
+  .lg-toolbar { position: static; }
 }

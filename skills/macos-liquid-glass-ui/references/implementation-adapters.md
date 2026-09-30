@@ -21,14 +21,22 @@ app background       -> --lg-bg
 content surface      -> --lg-surface
 secondary surface    -> --lg-surface-secondary
 primary text         -> --lg-text
-secondary text       -> --lg-muted
+secondary text       -> --lg-text-secondary（--lg-muted 是它的历史别名）
+boundary             -> --lg-border（装饰） / --lg-border-strong（需 3:1）
 separator            -> --lg-separator
-accent               -> --lg-accent
+accent               -> --lg-accent（边框/焦点/图标/大字）
+solid button         -> --lg-button + --lg-button-text
 control glass        -> --lg-glass-regular
-floating glass       -> --lg-glass-thick / clear
+floating glass       -> --lg-glass-thick
+rich-media glass     -> --lg-glass-clear（需通过 clear 判定线）
+status               -> --lg-success/warning/danger/info/neutral（+ -bg）
+chart series         -> --lg-chart-1..5 与 --lg-chart-grid（明暗各一套）
+layering             -> --lg-z-content/sticky/menu/drawer/modal/toast
 ```
 
-已有品牌色优先。只有用户明确要求完整换肤时才替换 accent。
+已有品牌色优先。只有用户明确要求完整换肤时才替换 accent。**不要把这些值再抄一份十六进制进业务代码**：`assets/foundation.css` 是唯一定义源，项目里要么直接引用它，要么把值搬进项目自己的 token 层后只保留语义别名。
+
+双向映射是迁移的一部分，不是一次性动作：写清"项目 token → lg token"，也写清"lg token 找不到对应项时怎么处理"（新增语义 token / 复用最接近的旧 token / 记录为待办），否则下次反向同步会互相覆盖。
 
 ## 3. Vanilla CSS
 
@@ -53,14 +61,28 @@ Glass：
 
 ```css
 .lg-glass {
-  background: var(--lg-glass-regular);
-  border: 1px solid var(--lg-glass-edge);
-  backdrop-filter: blur(var(--lg-blur)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(140%);
+  background: var(--lg-surface-material);
+  border: 1px solid var(--lg-edge);
+  -webkit-backdrop-filter: blur(var(--lg-blur-material)) saturate(var(--lg-saturation));
+  backdrop-filter: blur(var(--lg-blur-material)) saturate(var(--lg-saturation));
+}
+/* 材质由 data-material 切换，两个活动变量跟着变，不要复制多份玻璃规则 */
+[data-material="thick"] {
+  --lg-surface-material: var(--lg-glass-thick);
+  --lg-blur-material: var(--lg-blur-thick);
 }
 ```
 
-必须提供不支持 backdrop-filter 和 reduce transparency 的 solid fallback。
+根容器同时带上字体与配色方案：
+
+```css
+.lg-theme {
+  font-family: var(--lg-font);
+  color-scheme: light;               /* data-theme="dark" 时改为 dark，否则原生控件不跟随 */
+}
+```
+
+必须提供不支持 backdrop-filter 和 reduce transparency 的 solid fallback，并且**背景、边框、阴影一起改**（只改背景会留下透明高光边，在白底上等于没有边界）。
 
 ## 4. Vue 3
 
@@ -236,6 +258,23 @@ Liquid Glass 可用于：
 - legend/filter toolbar
 - context popover
 
+系列色必须把 `--lg-chart-1..5` 真的喂给图表库，而不是在库的 theme 里另写一套色值；明暗主题各取一套：
+
+```js
+// ECharts：从 CSS 变量读，主题切换时重新取一次
+const css = getComputedStyle(document.querySelector('.lg-theme'));
+const series = [1, 2, 3, 4, 5].map((n) => css.getPropertyValue(`--lg-chart-${n}`).trim());
+option = {
+  color: series,
+  xAxis: { axisLine: { lineStyle: { color: css.getPropertyValue('--lg-border-strong').trim() } } },
+  splitLine: { lineStyle: { color: css.getPropertyValue('--lg-chart-grid').trim() } },
+};
+```
+
+Chart.js 用 `Chart.defaults.color` / `borderColor` 读同样的变量；D3 直接 `stroke="var(--lg-chart-1)"`。注意 ECharts/Canvas 类库**读不到 CSS 变量字符串**时要用 `getComputedStyle` 解析成具体色值（上面示例即此做法），并在主题切换后重新解析一遍。
+
+颜色不是唯一编码：series 上同时给 `symbol` 或 `lineStyle.type`，图例复用同一标记；阈值线用 `--lg-border-strong` 或状态色并加文字标签，不要用装饰网格色。
+
 容器 resize：
 
 - 监听实际 container；
@@ -245,16 +284,17 @@ Liquid Glass 可用于：
 
 ## 11. Electron / Tauri
 
-使用本 Web Skill 做内容 UI，但区分：
+**窗口原生材质优先于页面内 backdrop-filter**，细节（Electron `vibrancy` / `backgroundMaterial`、Tauri v2 `setEffects()` 与 `Effect.LiquidGlassRegular` / `LiquidGlassClear`、权限与透明窗口、降级链）见 `references/desktop-shell-integration.md`。
 
-- app content chrome
-- real native window controls
+在本文件层面只记三条：
 
-如果项目真的自定义 titlebar/window buttons，它们必须连接真实窗口 API；否则不要添加装饰性 traffic lights。
+- 页面内 backdrop-filter 只能模糊 WebView 自己绘制的内容，不会模糊桌面壁纸；窗口不透明时"半透明页面"是假的。
+- 窗口材质之上不要再叠 `.lg-glass`，否则变成 glass-on-glass。
+- 自定义 titlebar/window buttons 必须连接真实窗口 API；否则不要添加装饰性 traffic lights。
 
 同时验证：
 
-- drag region；
+- drag region（`-webkit-app-region: drag` 区域内的按钮必须显式 `no-drag`，否则点不动）；
 - window resize；
 - maximize/fullscreen；
 - Windows/Linux fallback（若跨平台）；
@@ -273,17 +313,38 @@ Liquid Glass 可用于：
 7. optional Inspira UI enhancements；
 8. polish。
 
-不要一次 PR 重写所有页面。
+不要一次 PR 重写所有页面。每个阶段都要能独立回滚：
 
-## 13. Review checklist
+- 阶段范围写清"改了哪些文件/组件"，避免一个 PR 横跨 tokens 与业务逻辑；
+- 回滚策略明确到"删掉 `.lg-theme` 类是否回到原样"——如果做不到，说明改动已经侵入业务结构，需要拆小；
+- 视觉回归基线：进入第 3 步之前，先对要改的关键页面截一组基线图（目标浏览器 + 目标视口），每阶段后对比；没有基线的"看起来没变"不算验收；
+- 主题切换与 token 变更后，图表/Canvas 类组件要重新解析色值（见 §10）。
+
+## 13. SSR / Hydration
+
+玻璃相关代码大量依赖运行时（`getComputedStyle`、`matchMedia`、`backdrop-filter` 特性检测、Canvas/WebGL、Inspira UI 的 motion 组件），在 SSR 下容易产生 hydration mismatch。
+
+规则：
+
+- 服务端渲染阶段**不要**根据 `window`/`matchMedia` 决定类名或结构；
+- 需要客户端能力时用 `ClientOnly`（Nuxt）、`defineAsyncComponent` + `ssr: false`、或 `useState`/`useEffect` 在水合后再挂载增强类（例如水合后才加 `.lg-glass` 的真实 blur）；
+- 首屏 HTML 必须是**可读的实色基线**，水合后再增强为玻璃；反过来（先玻璃后实色）会造成可见跳变；
+- Inspector/表格等尺寸相关逻辑，水合后再测量，服务端不要输出零尺寸占位；
+- Canvas/WebGL 组件单独隔离，不要把整页变成 client-only。
+
+## 14. Review checklist
 
 - 是否复用了现有组件库？
 - 是否避免全局 `!important`？
 - 是否避免深度绑定组件库内部 DOM？
 - 是否保留 keyboard/ARIA？
 - 是否只在 control/navigation layer 用 blur？
-- 是否有 fallback？
+- 是否引用了存在的 token（没有 `--lg-glass-edge`→`--lg-edge`、`--lg-blur`→`--lg-blur-material` 这类笔误）？
+- 是否有 fallback（背景 + 边框 + 阴影一起降级）？
+- 是否显式设置了 `color-scheme`？
+- 是否把 `--lg-chart-*` 真正喂给了图表库，明暗两套都用上？
+- SSR 首屏是否为可读实色基线，没有 hydration mismatch？
 - 如果使用 Inspira UI，是否只是必要的增强而非整页炫技？
 - Inspira 持续动画是否有 reduced-motion / performance fallback？
-- 是否真实验证 resize / short viewport / 200%？
+- 是否真实验证 resize / short viewport / 200% / 仅文字放大？
 - 是否没有为了换肤改业务逻辑？

@@ -56,7 +56,23 @@
 
 **现象**：底部按钮用 sticky，却没有明确滚动祖先；内容短时按钮悬在中间。
 
-**修正**：工作台使用 grid/flex 的稳定底行；自然内容页再按需要 sticky。
+**修正**：工作台使用 grid/flex 的稳定底行；自然内容页再按需要 sticky，并且必须同时给滚动容器 `scroll-padding-block-end`（等于底栏实测高度，见 `.lg-actions-sticky` + `.lg-scroll-under-actions`），否则最后一个字段会被压在底栏下。短屏时底栏回到正常流。
+
+### B3b. 只在 Chromium 验证就宣布降级完成
+
+**现象**：用 DevTools 模拟 `prefers-reduced-transparency: reduce` 通过，就认为 Reduce Transparency 已支持。
+
+**问题**：该媒体查询只有 Chromium 系实现，Safari 与 Firefox 不生效，而 Safari 在 macOS 上是默认浏览器。
+
+**修正**：默认状态实色可读 + `prefers-contrast: more` 路径 + 桌面壳系统设置三条独立验证，并在交付里写明哪条真跑过。
+
+### B3c. 只测页面缩放
+
+**现象**：验证了 200% 页面缩放，没测仅文字放大。
+
+**问题**：用户调大基准字号/浏览器最小字号时，写死高度的控制层会裁切。
+
+**修正**：控制层高度用 `min-height` 跟随文字；仅文字放大到 200% 时按钮不被裁切、action bar 换行。
 
 ### B4. 窄屏只缩小
 
@@ -84,7 +100,7 @@
 
 **现象**：普通按钮、icon button、tag、input 全是 999px 圆角。
 
-**修正**：按组件尺寸和容器 concentric 关系使用 6–28px 等不同半径；胶囊只用于适合的控件。
+**修正**：按组件尺寸和容器 concentric 关系选用 `--lg-radius-xs…xl`（8/12/16/24/28px）；胶囊只用于适合的控件。不要出现刻度外的 6/14/18px 半径。
 
 ### C4. 把 SF Symbols 风格当装饰插画
 

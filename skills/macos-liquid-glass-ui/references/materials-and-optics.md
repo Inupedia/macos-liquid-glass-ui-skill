@@ -1,6 +1,8 @@
 # Liquid Glass 材质与光学规则
 
 > 适用范围：Web / 跨端视觉近似。这里描述的是 Agent 的设计与实现决策，不是 Apple 官方固定数值。原生 SwiftUI / AppKit 请求优先使用系统组件与原生材质，见 `macos-liquid-glass-native-ui`。
+>
+> 相关：桌面壳（Electron / Tauri）窗口原生材质见 `references/desktop-shell-integration.md`；中西文混排、逻辑属性与 RTL 见 `references/i18n-and-typography.md`。
 
 ## 1. 先区分功能层与内容层
 
@@ -28,7 +30,7 @@ Agent 从下表选择，而不是自由发明每块玻璃：
 | `glass-thick` | 高不透明度、较强 blur | 菜单、Popover、Sheet、关键浮层 | 大面积常驻页面 |
 | `glass-tinted` | regular/clear + 小范围品牌染色 | 选中、关键操作、品牌强调 | 每个组件都着色 |
 
-建议 Web 基线：
+建议 Web 基线（完整定义见 `assets/foundation.css`，这里只列与材质有关的）：
 
 ```css
 --lg-content: #fff;
@@ -36,10 +38,25 @@ Agent 从下表选择，而不是自由发明每块玻璃：
 --lg-glass-regular: rgba(250,251,253,.78);
 --lg-glass-clear: rgba(255,255,255,.42);
 --lg-glass-thick: rgba(250,251,253,.92);
+--lg-glass-tinted: rgba(234,243,255,.82);
 --lg-blur-light: 20px;
 --lg-blur-regular: 24px;
 --lg-blur-thick: 32px;
 --lg-saturation: 140%;
+--lg-scrim: rgba(15,18,24,.28);
+```
+
+实现方式是把 `[data-material="light|regular|clear|thick|tinted"]` 映射到 `--lg-surface-material` 与 `--lg-blur-material` 两个活动变量，而不是给每种材质复制一份玻璃规则：
+
+```css
+[data-material="thick"] {
+  --lg-surface-material: var(--lg-glass-thick);
+  --lg-blur-material: var(--lg-blur-thick);
+}
+.lg-glass {
+  background: var(--lg-surface-material);
+  backdrop-filter: blur(var(--lg-blur-material)) saturate(var(--lg-saturation));
+}
 ```
 
 这些只是起点。真实背景越复杂，越需要提高不透明度、增加局部暗化或退回稳定 surface。
@@ -67,7 +84,14 @@ Agent 从下表选择，而不是自由发明每块玻璃：
 - 地图
 - 大型封面或媒体画布
 
-Clear 不等于“透明度越低越高级”。如果白色或浅色内容从下面经过后导致按钮消失，应立即提高材质密度、加局部 dimming / scrim 或改用 regular。
+Clear 不等于“透明度越低越高级”。判断标准要可测，而不是靠事后观察：
+
+1. 计算合成背景色：`合成 = alpha × 玻璃色 + (1 - alpha) × 最坏背景色`。以浅色 clear（`rgba(255,255,255,.42)`）叠在最深的内容背景上为例，需要取"最坏情况"的那一帧（图片最暗处、阴影、深色封面），不是平均值。
+2. 合成后背景亮度落在中间区间（大致 L\* 20–80）时，正文文字与合成背景的对比度必须 ≥ 4.5:1，图表线条等必要图形 ≥ 3:1。用真实取色器量，不要靠肉眼。
+3. 任一项不满足：先加 scrim（`.lg-glass-scrim`，不透明度 ≥ .25），仍不满足就禁用 clear，改用 `glass-regular` 或退回稳定 surface。
+4. 动态背景（视频、轮播图、地图）必须按"最亮帧 + 最暗帧"两端各验一次，只验当前截图不算通过。
+
+参考量级：白色 clear 叠在 `#9B9C9D` 量级的中间调背景上时，`--lg-text`（#1D1D1F）只剩约 6:1，而 `--lg-text-secondary`（#62626A）会掉到 4.5:1 以下。因此 clear 上的次要文字通常需要 scrim 或改用 regular。
 
 ## 4. 玻璃必须有结构，不只是一层 blur
 
@@ -131,12 +155,16 @@ box-shadow:
 
 深色不能只把白玻璃改成黑色透明。
 
-建议：
+深色下同一组 token 会取到深色值，直接复用即可：
 
 ```css
---lg-dark-glass-regular: rgba(35,39,48,.82);
---lg-dark-edge: rgba(255,255,255,.12);
+.lg-theme[data-theme="dark"] {
+  --lg-glass-regular: rgba(35,39,48,.82); /* --lg-glass-regular 的深色值 */
+  --lg-edge: rgba(255,255,255,.12);       /* --lg-edge 的深色值 */
+}
 ```
+
+不要在业务代码里新造 `--lg-dark-*` 系列变量：主题差异统一由 `.lg-theme[data-theme="dark"]` 覆盖同名 token 表达，否则同一语义会有两套名字。
 
 深色更依赖：
 
@@ -151,33 +179,87 @@ box-shadow:
 
 Agent 必须把材质看成**可降级表现**，不能把可读性绑定在透明度上。
 
+**先认清支持现状**：`prefers-reduced-transparency` 目前只有 Chromium 系（Chrome/Edge 119+）实现，Firefox 与 **Safari 均不支持**（WebKit 以隐私为由拒绝，见文末来源）。由于 macOS 上 Safari 是默认浏览器，这个媒体查询只能当增强，不能当唯一降级路径。必须验证三条独立路径：
+
+1. 无任何媒体查询时的实色基线（默认就是可读的）；
+2. `prefers-contrast: more`（Chromium / Firefox / Safari 均支持）；
+3. 桌面壳里 macOS 系统「降低透明度」对窗口原生材质的影响（见 `references/desktop-shell-integration.md`）。
+
 当减少透明或浏览器不支持 backdrop-filter：
 
-- 玻璃退到稳定 surface；
-- 边界、选中、焦点仍然清楚；
-- 信息层级不能消失。
+```css
+@media (prefers-reduced-transparency: reduce) {
+  .lg-glass, .lg-toolbar, .lg-menu, .lg-popover, [data-material] {
+    background: var(--lg-surface);
+    border-color: var(--lg-border);   /* 只改背景会把白边留在白底上，边框必须一起改 */
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+```
+
+同上，`@supports not (backdrop-filter: blur(1px))` 的回退也必须同时改 `border-color` 与 `box-shadow`，否则玻璃会退化成一张看不出边界的白卡。
 
 当提高对比度：
 
-- 提高文字和边界对比；
-- 减少过淡的透明装饰；
-- 不能只靠背景模糊区分层级。
+```css
+@media (prefers-contrast: more) {
+  .lg-theme {
+    --lg-separator: #7a7a85;
+    --lg-edge: rgba(0, 0, 0, .28);
+    --lg-border: #6e7076;
+    --lg-scrim: rgba(15, 18, 24, .52);
+  }
+  .lg-theme[data-theme="dark"] {
+    --lg-separator: #8a90a0;
+    --lg-edge: rgba(255, 255, 255, .34);
+    --lg-border: #9aa0ac;
+    --lg-scrim: rgba(0, 0, 0, .62);
+  }
+}
+```
 
-当环境要求显示更明确边界时：
+当环境要求显示更明确边界（Windows 高对比、forced-colors）：
 
-- 自定义控制补足 border/outline；
-- 不把边界烘焙成永远很重的默认视觉；
-- 原生实现优先响应系统环境值。
+```css
+@media (forced-colors: active) {
+  .lg-glass, .lg-toolbar, .lg-menu, .lg-popover, .lg-modal {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  .lg-primary { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; }
+  .lg-theme :focus-visible { outline: 2px solid Highlight; box-shadow: none; }
+}
+```
+
+在 forced-colors 下所有玻璃装饰都会被系统抹平，这是正确行为：不要用 `forced-color-adjust: none` 去保留品牌色，那会同时破坏系统对比设置。信息层级必须由文字、图标和边框承担，不能只靠背景模糊区分。
 
 ## 9. 性能预算
 
-backdrop-filter 是昂贵效果。实现时：
+backdrop-filter 会把区域提升为独立合成层并每帧重新采样。只写"不要滥用"无法验收，用下面的预算和测法：
+
+| 指标 | 预算 | 怎么测 |
+|---|---|---|
+| 同屏可见玻璃层数 | ≤ 3（超过就必须合并容器或降低材质等级） | DevTools → Layers 面板数合成层 |
+| 滚动帧率 | 60Hz 下掉帧 < 5%；120Hz 设备同样按掉帧比例算 | Performance 面板录制滚动，看 long task 与 dropped frames |
+| 单帧 raster 时间 | 玻璃区域合计 < 4ms（超出先减面积再减层数） | Performance 面板看 Paint/Composite 分段 |
+| 玻璃覆盖面积 | 单块 ≤ 视口 35%；Toolbar/Sidebar 之外的常驻玻璃合计 ≤ 40% | 目视 + DevTools 高亮合成层 |
+| 模糊半径 | 上限 `--lg-blur-thick`（32px）；不要再叠加 CSS `filter: blur()` | 代码检查 |
+
+实现规则：
 
 - 不在长列表每行启用 backdrop-filter；
-- 不在动画中的大面积元素持续变化 blur；
+- 不在动画中的大面积元素持续变化 blur（改 opacity/transform，不改 blur 半径）；
 - 避免 3 层以上相互嵌套的透明模糊；
 - 优先一个共享容器，而不是 N 个独立玻璃子项；
-- 滚动卡顿时先降低 blur 区域和层数，而不是牺牲文字清晰度。
+- 上表任一指标超标时，降级顺序固定为：**减面积 → 减层数 → 降材质等级（thick→regular→light→solid）→ 去掉 backdrop-filter**。任何一步都不要先牺牲文字清晰度。
+
+低端设备与集成显卡按"预算打七折"处理，并在交付说明里写明你实际测过的设备与结论，不要把桌面开发机的数据当成通用结论。
+
+桌面壳（Electron / Tauri）里还有一层更优解：窗口原生材质不需要页面每帧重新采样，见 `references/desktop-shell-integration.md`。
 
 ## 10. 失败模式
 
@@ -213,3 +295,9 @@ backdrop-filter 是昂贵效果。实现时：
 - https://developer.apple.com/design/human-interface-guidelines/materials
 - https://developer.apple.com/documentation/technologyoverviews/liquid-glass
 - https://developer.apple.com/design/human-interface-guidelines/designing-for-macos/
+
+系统偏好支持现状（`prefers-reduced-transparency` 仅 Chromium 系，Firefox / Safari 未实现）：
+
+- https://web-platform-dx.github.io/web-features-explorer/features/prefers-reduced-transparency/
+- https://github.com/WebKit/standards-positions/issues/145
+- https://webkit.org/b/175497

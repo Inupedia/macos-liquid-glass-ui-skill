@@ -71,7 +71,7 @@ pnpm add @vueuse/core motion-v tw-animate-css @inspira-ui/plugins
 
 - 先检查项目 Tailwind 版本；
 - 当前官方主线安装说明面向较新的 Tailwind 方案；
-- Tailwind CSS v3 项目不要机械套用当前主线配置，按 Inspira UI 对应版本文档处理；
+- **Tailwind CSS v3 项目必须改用 v1 文档**（https://v1.inspira-ui.com），不要机械套用当前主线（v2+）配置；
 - 不为了使用一个视觉组件强制升级 Tailwind、Nuxt 或现有 UI framework；
 - 如果依赖升级影响范围明显大于组件价值，改用本地 CSS / 现有组件实现等价效果。
 
@@ -98,11 +98,11 @@ Inspira UI 示例中的颜色、渐变、边框和背景默认只是 demo 视觉
 ```text
 Inspira background       -> existing app background / --lg-bg
 Inspira card background  -> --lg-surface 或允许时 --lg-glass-regular
-Inspira border           -> --lg-separator / --lg-glass-edge
+Inspira border           -> --lg-separator（装饰）/ --lg-border-strong（需 3:1）/ --lg-edge（玻璃边）
 Inspira foreground       -> --lg-text
-Inspira muted            -> --lg-muted
-Inspira primary          -> existing brand accent / --lg-accent
-Inspira radius           -> 本 Skill 的 radius scale
+Inspira muted            -> --lg-text-secondary（--lg-muted 为历史别名）
+Inspira primary          -> existing brand accent / --lg-accent（白字按钮用 --lg-button）
+Inspira radius           -> 本 Skill 的 radius scale（--lg-radius-xs…pill）
 Inspira shadow/glow      -> 本 Skill shadow + effect budget
 Inspira animation        -> 本 Skill motion duration / easing / reduced-motion
 ```
@@ -286,12 +286,15 @@ Liquid Glass Skill
 本 Skill 的基础动效时长仍优先于 demo 默认值：
 
 ```text
-hover       120–160ms
-press       100–140ms
-selection   180–220ms
-panel       200–280ms
-content     240–320ms
+hover       --lg-dur-hover    150ms
+press       --lg-dur-press    120ms
+selection   --lg-dur-select   200ms
+panel       --lg-dur-panel    240ms
+content     --lg-dur-content  280ms
+easing      --lg-ease         cubic-bezier(.2,.8,.2,1)
 ```
+
+这些值与 `assets/foundation.css` 的 token 一一对应，Inspira 组件的 `duration` / `transition` 配置直接引用它们，不要照抄 demo 里的秒级数值。
 
 ### 持续动画预算
 

@@ -10,11 +10,12 @@ Liquid Glass 的视觉效果必须服从可读性、可操作性和系统偏好�
 - 明确焦点
 - 文字与必要图形对比度
 - 不只靠颜色表达状态
-- 200% 文字/页面缩放
+- 200% 页面缩放 **与仅文字放大**（两者是不同路径，都要测）
 - Reduce Motion
-- Reduce Transparency
+- Reduce Transparency（注意浏览器支持限制，见 §5）
 - Increase Contrast
 - 明确边界需求（例如系统 Show Borders）
+- Windows 高对比 / `forced-colors`
 - 屏幕阅读器可理解名称与状态
 - 短屏/软键盘下操作可达
 
@@ -34,29 +35,31 @@ Liquid Glass 的视觉效果必须服从可读性、可操作性和系统偏好�
 
 ## 3. Focus
 
-默认建议：
+"可见"必须写成可测条件：**焦点环与它内侧相邻的颜色、以及它外侧越过 offset 后的背景色，两侧对比度都要 ≥ 3:1。** 只测其中一侧是常见漏洞——在玻璃上尤其容易翻车，因为外侧背景是随时变化的合成色。
 
 ```css
 :focus-visible {
-  outline: 3px solid var(--lg-accent);
-  outline-offset: 3px;
+  outline: var(--lg-focus-ring-width) solid var(--lg-focus-ring);
+  outline-offset: var(--lg-focus-ring-offset);
+  box-shadow: 0 0 0 1px var(--lg-focus-halo); /* 与玻璃之间留一条已知色的分离环 */
 }
 ```
 
-实际实现根据背景调整。透明玻璃上必须在浅色、深色、复杂图片背景分别检查焦点是否仍可见。
+`outline-offset` 的作用是让环脱离元素自身边界、落在背景上；代价是环外侧对比度由背景决定。玻璃上无法保证时，用上面这种"outline + 1px `--lg-focus-halo`"双层环：内层用已知的 surface 色隔开玻璃，外层用强调色保证可见。不要用 `box-shadow` 动效单独替代 focus indicator，除非两层对比都实测过。
 
-不要让 box-shadow 动效完全替代 focus indicator，除非对比度和边界经过实际验证。
+必须在浅色、深色、高细节图片/视频背景上各测一次，并记录实测对比度，而不是写"检查是否仍可见"。
 
 ## 4. 对比度
 
 目标：
 
 - 普通文字：至少 4.5:1；
-- 大字：至少 3:1；
-- 必要 UI 边界、图标、焦点和状态图形：目标 3:1；
+- 大字（≥18.66px 粗体或 ≥24px）：至少 3:1；
+- 必要 UI 边界、图标、焦点和状态图形：至少 3:1；
+- **装饰性元素豁免**：`--lg-border`、`--lg-separator`、`--lg-chart-grid` 属于纯装饰分隔（实测 1.2–1.7:1），不承担 3:1 义务。一旦某个边界/线条参与读数或状态表达（输入框框、选中容器、阈值线、图表参考线），它就升级为"必要图形"，必须改用 `--lg-border-strong` 或状态色。
 - disabled 可以更弱，但不能与正常状态无法区分。
 
-玻璃的对比度必须在**真实背景**上测，而不是只看 token 之间的理论值。
+玻璃的对比度必须在**真实背景**上测，而不是只看 token 之间的理论值；动态背景按最亮帧与最暗帧各测一次。
 
 若背景变化导致不可预测：
 
@@ -67,26 +70,32 @@ Liquid Glass 的视觉效果必须服从可读性、可操作性和系统偏好�
 
 ## 5. Reduce Transparency
 
+**先认清支持边界**：`prefers-reduced-transparency` 目前只有 Chromium 系（Chrome/Edge 119+）实现，Firefox 与 **Safari 都不支持**（WebKit 以隐私为由拒绝，见文末链接）。macOS 上 Safari 是默认浏览器，因此这个媒体查询只是增强，不是唯一降级路径。必须同时保证：
+
+1. **无媒体查询时的实色基线**——默认状态本身就可读；
+2. `prefers-contrast: more` 路径（Safari / Firefox / Chromium 均支持）；
+3. 桌面壳里 macOS 系统「降低透明度」对窗口原生材质的影响（见 `references/desktop-shell-integration.md`）。
+
 减少透明时：
 
 - 移除 backdrop-filter；
 - 使用稳定 surface；
+- **同时改边框色**——白玻璃的 `--lg-edge` 是半透明白，只换背景会把白边留在白底上（对比度≈1.0，边界消失）；
 - 保留边界和层级；
-- 内容不能因为失去“透光”而失去分组关系。
-
-示例：
+- 内容不能因为失去"透光"而失去分组关系。
 
 ```css
 @media (prefers-reduced-transparency: reduce) {
-  .lg-glass {
+  .lg-glass, .lg-toolbar, .lg-menu, .lg-popover, [data-material] {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: var(--lg-surface);
+    border-color: var(--lg-border);
   }
 }
 ```
 
-如果浏览器不支持该媒体查询，也要保证基础 fallback 可读。
+`@supports not (backdrop-filter: blur(1px))` 的回退同理：**背景、边框、阴影三者要一起改**，否则玻璃退化成一张看不出边界的白卡。
 
 ## 6. Increase Contrast / Show Borders
 
@@ -98,7 +107,37 @@ Liquid Glass 的视觉效果必须服从可读性、可操作性和系统偏好�
 - 不依赖很淡的内高光作为唯一边界；
 - 原生 SwiftUI/AppKit 优先读取系统环境值并让系统组件自动适应。
 
-不要为了默认主题“高级感”而阻止高对比模式产生明显变化。
+```css
+@media (prefers-contrast: more) {
+  .lg-theme {
+    --lg-separator: #7a7a85;
+    --lg-edge: rgba(0, 0, 0, .28);
+    --lg-border: #6e7076;
+    --lg-scrim: rgba(15, 18, 24, .52);
+  }
+  .lg-theme[data-theme="dark"] {
+    --lg-separator: #8a90a0;
+    --lg-edge: rgba(255, 255, 255, .34);
+    --lg-border: #9aa0ac;
+    --lg-scrim: rgba(0, 0, 0, .62);
+  }
+}
+
+/* Windows 高对比：让系统接管颜色，不要用 forced-color-adjust:none 保住品牌色 */
+@media (forced-colors: active) {
+  .lg-glass, .lg-toolbar, .lg-menu, .lg-popover, .lg-modal {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  .lg-primary { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; }
+  :focus-visible { outline: 2px solid Highlight; box-shadow: none; }
+}
+```
+
+不要为了默认主题"高级感"而阻止高对比模式产生明显变化。Show Borders 在 macOS 上是由系统驱动的边界增强：自定义控件要在有边框/无边框两条路径下都可辨认，而不是把边框烘焙成默认视觉。
 
 ## 7. Reduce Motion
 
@@ -113,16 +152,23 @@ Liquid Glass 的视觉效果必须服从可读性、可操作性和系统偏好�
 ```css
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
 }
 ```
 
-不要全局 `animation: none !important` 破坏功能性状态；只关闭非必要动画。
+白名单（这些在 reduced-motion 下**保留**，因为它们承担状态反馈）：透明度变化、颜色变化、≤130ms 的边框变化。黑名单（一律关闭）：位移、缩放、弹性、视差、呼吸光、循环悬浮、背景流体动画、自动轮播。
+
+不要全局 `animation: none !important` 破坏功能性状态；也不需要把"非必要"交给临时判断——按上面两张清单判定即可。
 
 ## 8. 文字缩放与 200%
 
-200% 缩放后允许布局变化，不要求维持原来的“一屏三栏”。
+**页面缩放（zoom）与仅文字放大（text-only zoom / 用户调大基准字号）是两条不同路径，必须分别验证。** 只测页面缩放会漏掉 macOS Safari 的最小字号设置、用户自定义 `font-size`、以及系统级文字放大。
+
+200% 缩放后允许布局变化，不要求维持原来的"一屏三栏"。
 
 优先级：
 
@@ -142,8 +188,17 @@ Liquid Glass 的视觉效果必须服从可读性、可操作性和系统偏好�
 禁止：
 
 - 整页 `transform: scale()`；
-- 字号锁死在极小 px；
+- 字号锁死在极小 px（`font-size` 不要让容器高度写死，控制层高度用 `min-height` 跟随文字）；
 - 用省略号隐藏关键错误、金额、状态和按钮含义。
+
+仅文字放大的可判定验收：把根字号/浏览器最小字号调到 200%，控制层（toolbar、button、action bar）高度**随文字增长**且不裁切，`.lg-actions` 换行而不是把按钮挤出容器；表格允许横向滚动但不遮挡首列。
+
+自动化手段（沿用项目现有测试栈，不要另建脚手架）：
+
+- `axe-core`（或 `@axe-core/playwright`）跑对比度与语义规则；
+- Lighthouse 的 accessibility 分类做回归门槛；
+- Playwright `page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active', contrast: 'more' })` 覆盖偏好路径；
+- 对比度实测用取色器/脚本，不靠目视。
 
 ## 9. Screen Reader / Semantic UI
 
@@ -170,14 +225,14 @@ Liquid Glass 的视觉效果必须服从可读性、可操作性和系统偏好�
 
 至少同时使用文字、图标、形状、线型或位置中的一种。
 
-图表中相邻系列避免只用相近色区分；必要时增加 marker / dash / direct label。
+图表中相邻系列避免只用相近色区分；使用 `--lg-chart-1..5` 时同时给 marker 或 dash pattern，并保证深色主题用的是深色那一套系列值。
 
 ## 11. Target Size
 
 桌面可以比触屏紧凑，但重要交互仍需可稳定命中。
 
-- 常规按钮视觉高度约 40px 起；
-- 紧凑工具栏控件可更小，但扩大 hit area；
+- 常规按钮视觉高度用 `--lg-control-h-md`(40px) 起，主操作 `--lg-control-h-lg`(48px)；
+- 紧凑工具栏控件可用 `--lg-control-h-sm`(32px)，但扩大 hit area；
 - icon-only 控件不要只留下 16×16 的实际点击区域；
 - 相邻危险动作与普通动作留足间隔。
 
@@ -209,15 +264,22 @@ Liquid Glass 的视觉效果必须服从可读性、可操作性和系统偏好�
 
 - 键盘检查范围；
 - 焦点恢复是否验证；
-- 200% 缩放结果；
-- reduce-motion / transparency 的处理；
-- 高对比与边界策略；
+- 200% 页面缩放**与仅文字放大**的结果（分别写）；
+- reduce-motion / transparency 的处理，以及 Safari 等不支持该媒体查询时的降级路径；
+- 高对比（`prefers-contrast`）与 forced-colors 策略；
+- 实测过的对比度数值与测量位置；
 - 未实测的设备/辅助技术限制。
 
-不得用“构建通过”替代可访问性验收。
+不得用"构建通过"替代可访问性验收。
 
 ## 官方核对入口
 
 - https://developer.apple.com/design/human-interface-guidelines/accessibility
 - https://developer.apple.com/design/human-interface-guidelines/materials
 - https://developer.apple.com/design/human-interface-guidelines/designing-for-macos/
+
+`prefers-reduced-transparency` 支持现状（仅 Chromium 系）：
+
+- https://web-platform-dx.github.io/web-features-explorer/features/prefers-reduced-transparency/
+- https://github.com/WebKit/standards-positions/issues/145
+- https://webkit.org/b/175497
