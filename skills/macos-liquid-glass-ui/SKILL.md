@@ -69,6 +69,13 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web、桌面 Web App
 
 ### 3. 套组件与状态
 
+**组件级任务必须先读 `references/component-design-contract.md`，再按类型精读：**
+- 弹窗 / Sheet / Popover / Menu → `references/overlays-and-dialog-components.md`；
+- Select / Selector / Segmented / Combobox / Filter → `references/selection-and-input-components.md`；
+- Table / Data Grid / 排序 / 多选 / 批操作 → `references/tables-and-data-components.md`。
+
+不能只输出「有 Dialog、Table、Select」或一张视觉截图；对实际使用的组件必须包含 Variant 决策、Anatomy、Token/Material、关键状态、键盘与焦点、数据模型、失败恢复和可执行验收。具体组件优先保留现有无障碍 primitive；`assets/component-recipes.css` + `assets/component-showcase.html` 是可打开的示例，不是新的框架依赖。
+
 按业务需要覆盖默认、hover、pressed、focus、selected、disabled、readonly、loading、empty、error、long-content、narrow/short viewport、reduced motion/transparency 等状态，不为“完整”制造业务不存在的状态。
 
 如果用户要求“完整设计系统”或“组件要足够充足”，读取完整组件矩阵，再只展开目标产品实际会用到的类别。
@@ -135,6 +142,10 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web、桌面 Web App
 - **Liquid Glass 语义、regular/clear、光学、降级、性能**：`references/materials-and-optics.md`
 - **布局、滚动、稳定底栏、短屏/窄屏**：`references/layout-and-scroll.md`
 - **Toolbar、Sidebar、Inspector、Search、Menu、Selection**：`references/window-and-navigation.md`
+- **组件设计入口（选型 → 解剖 → 状态 → 行为 → 验收）**：`references/component-design-contract.md`
+- **弹窗、Sheet、Popover、Menu 的组件规格**：`references/overlays-and-dialog-components.md`
+- **Selector、Select、Combobox、Segmented、Filter**：`references/selection-and-input-components.md`
+- **Table、Data Grid、批量选择与排序**：`references/tables-and-data-components.md`
 - **组件行为、表单、图表、状态与动效**：`references/components-and-states.md`
 - **完整组件覆盖范围**：`references/component-matrix.md`
 - **键盘、对比度、缩放、系统辅助偏好**：`references/accessibility.md`
@@ -145,6 +156,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web、桌面 Web App
 - **Electron / Tauri 窗口原生材质、权限、降级链**：`references/desktop-shell-integration.md`
 - **中西文混排、CJK 断行、逻辑属性与 RTL、文字缩放**：`references/i18n-and-typography.md`
 - **实现/审查验收**：`references/validation.md`
+- **可运行的组件演示**：`assets/component-showcase.html` 与 `assets/component-recipes.css`（先加载 foundation.css；演示不替代生产级 a11y primitives）。
 - **起步样式**：`assets/foundation.css`，按现有 Token 转换；不是全局 reset，不直接替换现有样式。它是全部 `--lg-*` token 的唯一定义源。
 
 ### 推荐组合
@@ -153,6 +165,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web、桌面 Web App
 - **现有项目实施**：页面范式 + 布局滚动 + 材质 + 相关组件 + 实现适配 + anti-patterns + 验收。
 - **Vue/Nuxt + Inspira UI**：页面范式 + 材质 + 实现适配 + Inspira UI + accessibility + anti-patterns + 验收。
 - **审查**：anti-patterns + 可访问性 + 布局滚动 + 验收，再按发现的问题读取具体模块。
+- **Dialog / Selector / Table 组件专项**：component-design-contract + 对应详细组件规格 + foundation.css / component-recipes.css + accessibility + validation。
 - **Dashboard / 数据产品**：视觉系统 + 材质 + components-and-states + component-matrix + 布局滚动 + 可访问性。
 - **地图/媒体/画布**：材质（重点 clear）+ window/navigation + page-archetypes + accessibility。
 - **Electron / Tauri 桌面产品**：desktop-shell-integration + 材质 + 布局滚动 + window/navigation + 实现适配 + 验收。
@@ -167,7 +180,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web、桌面 Web App
 - 页面范式与布局合同；
 - 导航、Toolbar、Search、Sidebar/Inspector 规则；
 - 滚动条、溢出、固定操作、层级；
-- 组件与关键状态；
+- 组件级合同（Variant、Anatomy、材质/Token、键盘/焦点、受控状态、异步/错误、验收）；
 - Accessibility（含仅文字放大、Safari 降级路径、对比度实测值）；
 - 性能预算（层数、帧率、测量方法）；
 - Anti-pattern 检查；
