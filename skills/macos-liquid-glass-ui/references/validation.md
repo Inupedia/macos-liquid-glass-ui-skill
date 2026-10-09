@@ -17,13 +17,28 @@
 | 查看旧日志时新增事件 | 不强制跟随 | `layout-and-scroll.md` 展开 | 真实浏览器 |
 | 模态开关、键盘操作 | 背景不滚、焦点恢复、菜单不被遮挡 | `window-and-navigation.md`、`layout-and-scroll.md` 层级 | 真实浏览器 |
 | 短屏、200% 页面缩放 | 操作可达，无非必要页面横滚 | `layout-and-scroll.md` 窄屏短屏 | 真实浏览器 |
-| **仅文字放大到 200%** | 控制层高度随文字增长、不裁切，action bar 换行 | `accessibility.md` §8 | 真实浏览器（改基准字号，非页面缩放） |
-| 减少动态 | 状态完整，反馈类变化仍可见 | `accessibility.md` §7 | 真实浏览器 + `emulateMedia` |
-| 减少透明 | 实色可读，边界仍成立 | `accessibility.md` §5 | 见下方"减少透明度怎么测" |
-| 提高对比 / Windows 高对比 | 层级靠文字与边框成立 | `accessibility.md` §6 | 真实浏览器 + 系统设置 |
-| 焦点环对比度 | 环两侧各 ≥ 3:1 | `accessibility.md` §3 | 取色器实测 |
-| 玻璃层数与帧率 | 符合性能预算表 | `materials-and-optics.md` §9 | DevTools Performance / Layers |
+| **仅文字放大到 200%** | 控制层高度随文字增长、不裁切，action bar 换行 | `accessibility.md` `8 | 真实浏览器（改基准字号，非页面缩放） |
+| 减少动态 | 状态完整，反馈类变化仍可见 | `accessibility.md` `7 | 真实浏览器 + `emulateMedia` |
+| 减少透明 | 实色可读，边界仍成立 | `accessibility.md` `5 | 见下方"减少透明度怎么测" |
+| 提高对比 / Windows 高对比 | 层级靠文字与边框成立 | `accessibility.md` `6 | 真实浏览器 + 系统设置 |
+| 焦点环对比度 | 环两侧各 ≥ 3:1 | `accessibility.md` `3 | 取色器实测 |
+| 玻璃层数与帧率 | 符合性能预算表 | `materials-and-optics.md` `9 | DevTools Performance / Layers |
 | token 一致性 | 无未定义 `--lg-*`、无裸十六进制/裸 z-index | `visual-system.md`、`assets/foundation.css` | 静态可查（脚本/grep） |
+
+## 组件专项验收（新增）
+
+以下是 **Dialog / Selector / Table** 设计或实施任务的最小行为验证集。单纯 CSS 断言或页面截图不能替代交互检查：
+
+| 组件 | 正向路径 | 必须包含的反例 | 对应规范 |
+|---|---|---|---|
+| Modal / Sheet | Trigger → 弹窗 → Tab → 保存 → 焦点恢复 | 关闭时脏数据；短屏 Footer 遮挡；Modal 内下拉被挡 | `overlays-and-dialog-components.md` |
+| Alert | 安全取消 / 明确确认 | 遮罩点击或默认 Enter 意外执行危险动作 | `overlays-and-dialog-components.md` |
+| Popover / Menu | 锚点打开、键盘选项、Esc 关闭 | 触发器附近窗口边界、RTL、嵌套 Portal | `overlays-and-dialog-components.md` |
+| Select / Combobox | Arrow / Enter / Escape、已选值清楚 | 远程请求乱序、零结果、标签过长 | `selection-and-input-components.md` |
+| Segmented / Checkbox | 键盘切换，勾选与焦点可区分 | 200% 文字放大下 label 裁切、仅靠颜色标选择 | `selection-and-input-components.md` |
+| Table | 排序、筛选、选中、批操作、回退 | server sorting 不同步、跨页选择错乱、320px 横滚错误 | `tables-and-data-components.md` |
+
+样式演示见 `assets/component-showcase.html`。它只验证了浏览器原生 dialog/select/table 的基础路径；提交生产代码时仍需针对真实框架和异步状态测试。
 
 ## 视口矩阵与断点命中
 
