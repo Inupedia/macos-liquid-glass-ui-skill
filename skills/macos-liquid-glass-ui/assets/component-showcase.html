@@ -43,9 +43,9 @@
         <caption>任务与进度（示例数据）</caption>
         <thead><tr>
           <th scope="col"><input type="checkbox" id="select-all" aria-label="选择当前所有可见行"></th>
-          <th scope="col" id="name-col" aria-sort="none"><button type="button" id="sort-name">名称</button></th>
+          <th scope="col" id="name-col" aria-sort="ascending"><button type="button" id="sort-name">名称</button></th>
           <th scope="col">状态</th>
-          <th scope="col" id="amount-col" data-kind="number" aria-sort="none"><button type="button" id="sort-amount">数值</button></th>
+          <th scope="col" id="amount-col" data-kind="number"><button type="button" id="sort-amount">数值</button></th>
         </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -87,7 +87,7 @@
       return order.direction === "ascending" ? diff : -diff;
     });
   }
-  function render() {
+  function render(focusRowId = null) {
     body.replaceChildren();
     const data = visible();
     data.forEach(item => {
@@ -95,8 +95,8 @@
       tr.dataset.selected = String(selected.has(item.id));
       const checkTd = document.createElement("td"), check=document.createElement("input");
       check.type = "checkbox"; check.checked = selected.has(item.id);
-      check.setAttribute("aria-label","选择 "+item.name);
-      check.addEventListener("change", () => { check.checked ? selected.add(item.id) : selected.delete(item.id); render(); });
+      check.setAttribute("aria-label","选择 "+item.name); check.dataset.rowId=String(item.id);
+      check.addEventListener("change", () => { check.checked ? selected.add(item.id) : selected.delete(item.id); render(item.id); });
       checkTd.append(check);
       const title=document.createElement("td"); title.textContent=item.name;
       const state=document.createElement("td"), pill=document.createElement("span");
@@ -110,7 +110,8 @@
     all.checked = data.length > 0 && data.every(r => selected.has(r.id));
     all.indeterminate = data.some(r => selected.has(r.id)) && !all.checked;
     byId("selection-count").textContent="已选择 "+selected.size+" 项";
-    ["name","amount"].forEach(col => byId(col+"-col").setAttribute("aria-sort",order.field===col?order.direction:"none"));
+    ["name","amount"].forEach(col => { const th=byId(col+"-col"); if(order.field===col) th.setAttribute("aria-sort",order.direction); else th.removeAttribute("aria-sort"); });
+    if (focusRowId !== null) body.querySelector('input[data-row-id="'+focusRowId+'"]')?.focus();
   }
   all.addEventListener("change", () => {visible().forEach(r => all.checked?selected.add(r.id):selected.delete(r.id)); render();});
   ["name","amount"].forEach(field => byId("sort-"+field).addEventListener("click", () => {
