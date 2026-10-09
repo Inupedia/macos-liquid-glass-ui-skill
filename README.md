@@ -214,6 +214,7 @@ Agent 应先选择主范式，再画布局，而不是默认所有产品三栏�
 | 专题 | 具体内容 |
 |---|---|
 | [组件设计入口](skills/macos-liquid-glass-ui/references/component-design-contract.md) | Variant、Anatomy、Material、Token、状态、交互、验收 |
+| [通用控件与反馈](skills/macos-liquid-glass-ui/references/actions-navigation-feedback-components.md) | Button、Tabs、Sidebar、Navigation、Progress、Toast、List、Empty State |
 | [弹窗与浮层](skills/macos-liquid-glass-ui/references/overlays-and-dialog-components.md) | Alert、Modal/Sheet、Popover、Menu、focus、Esc、关闭策略 |
 | [Selector 与输入](skills/macos-liquid-glass-ui/references/selection-and-input-components.md) | Select、Combobox、Segmented、Radio、Checkbox、Switch、异步选项 |
 | [表格与数据网格](skills/macos-liquid-glass-ui/references/tables-and-data-components.md) | Sort、Filter、Selection、Batch actions、Sticky、Overflow |
