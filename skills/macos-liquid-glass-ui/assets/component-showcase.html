@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquid Glass · Component Showcase</title>
+<link rel="stylesheet" href="foundation.css">
+<link rel="stylesheet" href="component-recipes.css">
+</head>
+<body class="lg-theme">
+<main class="lgc-showcase">
+  <header>
+    <h1>组件示例 · Liquid Glass</h1>
+    <p class="lgc-caption">示意：内容区保持实色，弹窗使用原生 dialog，选择器优先浏览器控件，表格支持排序/筛选/选择。不是生产级组件库。</p>
+    <button id="theme" class="lgc-btn" type="button">切换明暗主题</button>
+  </header>
+  <section class="lgc-panel" aria-labelledby="controls-title">
+    <h2 class="lgc-heading" id="controls-title">Selector · 选择器</h2>
+    <div class="lgc-stack">
+      <div class="lgc-field">
+        <label for="status">状态筛选</label>
+        <select class="lgc-select" id="status">
+          <option value="">全部状态</option><option value="pending">进行中</option><option value="done">已完成</option>
+        </select>
+      </div>
+      <fieldset style="border:0;margin:0;padding:0">
+        <legend class="lgc-caption">密度模式（演示）</legend>
+        <div class="lgc-segments">
+          <label><input type="radio" name="density" value="standard" checked><span>标准</span></label>
+          <label><input type="radio" name="density" value="compact"><span>紧凑</span></label>
+        </div>
+      </fieldset>
+      <button class="lgc-btn lgc-btn--primary" id="open-dialog" type="button">新建记录…</button>
+    </div>
+  </section>
+  <section class="lgc-panel" aria-labelledby="table-title">
+    <div class="lgc-stack">
+      <h2 class="lgc-heading" id="table-title">Table · 数据表格</h2>
+      <span class="lgc-caption" id="selection-count" role="status" aria-live="polite">已选择 0 项</span>
+    </div>
+    <div class="lgc-table-scroller">
+      <table class="lgc-table">
+        <caption>任务与进度（示例数据）</caption>
+        <thead><tr>
+          <th scope="col"><input type="checkbox" id="select-all" aria-label="选择当前所有可见行"></th>
+          <th scope="col" id="name-col" aria-sort="none"><button type="button" id="sort-name">名称</button></th>
+          <th scope="col">状态</th>
+          <th scope="col" id="amount-col" data-kind="number" aria-sort="none"><button type="button" id="sort-amount">数值</button></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="lgc-caption" id="empty" hidden>没有匹配记录。可以清除筛选以查看全部数据。</p>
+  </section>
+</main>
+<dialog id="entry-dialog" class="lgc-dialog" aria-labelledby="dialog-title">
+  <form method="dialog" id="entry-form" class="lgc-dialog-layout">
+    <div class="lgc-dialog-header"><h2 id="dialog-title">新建记录</h2></div>
+    <div class="lgc-dialog-body">
+      <p class="lgc-caption">演示表单保留清晰标签、原生输入与独立操作区。</p>
+      <div class="lgc-field"><label for="entry-name">名称</label>
+        <input class="lgc-input" type="text" id="entry-name" required maxlength="80" autocomplete="off">
+      </div>
+      <div class="lgc-field"><label for="entry-amount">数值</label>
+        <input class="lgc-input" type="number" id="entry-amount" value="10" min="0" max="999" required>
+      </div>
+    </div>
+    <div class="lgc-dialog-footer">
+      <button class="lgc-btn" formnovalidate value="cancel" type="submit">取消</button>
+      <button class="lgc-btn lgc-btn--primary" value="save" type="submit">保存</button>
+    </div>
+  </form>
+</dialog>
+<script>
+(() => {
+  "use strict";
+  const byId = id => document.getElementById(id);
+  const rows = [{id:1,name:"水资源调度",state:"pending",amount:36},{id:2,name:"知识库索引",state:"done",amount:92},{id:3,name:"任务核查",state:"pending",amount:11},{id:4,name:"文稿发布",state:"done",amount:61}];
+  const selected = new Set();
+  let order = {field:"name",direction:"ascending"};
+  let nextId = 5;
+  const status = byId("status"), body = byId("tbody"), all = byId("select-all");
+  const collator = new Intl.Collator("zh-CN", {numeric:true});
+  function visible() {
+    return rows.filter(r => !status.value || r.state === status.value).sort((a,b) => {
+      const diff = order.field === "amount" ? a.amount-b.amount : collator.compare(a.name,b.name);
+      return order.direction === "ascending" ? diff : -diff;
+    });
+  }
+  function render() {
+    body.replaceChildren();
+    const data = visible();
+    data.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.dataset.selected = String(selected.has(item.id));
+      const checkTd = document.createElement("td"), check=document.createElement("input");
+      check.type = "checkbox"; check.checked = selected.has(item.id);
+      check.setAttribute("aria-label","选择 "+item.name);
+      check.addEventListener("change", () => { check.checked ? selected.add(item.id) : selected.delete(item.id); render(); });
+      checkTd.append(check);
+      const title=document.createElement("td"); title.textContent=item.name;
+      const state=document.createElement("td"), pill=document.createElement("span");
+      pill.className="lgc-status"; pill.dataset.state=item.state; pill.textContent=item.state==="done"?"已完成":"进行中";
+      state.append(pill);
+      const amount=document.createElement("td"); amount.dataset.kind="number"; amount.textContent=String(item.amount);
+      tr.append(checkTd,title,state,amount); body.append(tr);
+    });
+    byId("empty").hidden = data.length !== 0;
+    all.disabled = data.length === 0;
+    all.checked = data.length > 0 && data.every(r => selected.has(r.id));
+    all.indeterminate = data.some(r => selected.has(r.id)) && !all.checked;
+    byId("selection-count").textContent="已选择 "+selected.size+" 项";
+    ["name","amount"].forEach(col => byId(col+"-col").setAttribute("aria-sort",order.field===col?order.direction:"none"));
+  }
+  all.addEventListener("change", () => {visible().forEach(r => all.checked?selected.add(r.id):selected.delete(r.id)); render();});
+  ["name","amount"].forEach(field => byId("sort-"+field).addEventListener("click", () => {
+    order = {field,direction:order.field===field && order.direction==="ascending"?"descending":"ascending"}; render();
+  }));
+  status.addEventListener("change",render);
+  byId("theme").addEventListener("click", () => {
+    const root=document.body;
+    root.dataset.theme=root.dataset.theme==="dark"?"light":"dark";
+  });
+  const dialog=byId("entry-dialog"), form=byId("entry-form"), open=byId("open-dialog");
+  open.addEventListener("click",() => dialog.showModal());
+  let submitterValue="cancel";
+  form.addEventListener("click", e => {
+    const button=e.target.closest('button[type="submit"]'); if(button) submitterValue=button.value;
+  });
+  form.addEventListener("submit", e => {
+    const action=e.submitter?.value ?? submitterValue;
+    if(action!=="save") return;
+    const name=byId("entry-name").value.trim();
+    if(!name) { e.preventDefault(); byId("entry-name").focus(); return; }
+    rows.push({id:nextId++,name,state:"pending",amount:Number(byId("entry-amount").value)});
+    form.reset(); status.value=""; render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
