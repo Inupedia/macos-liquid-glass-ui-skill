@@ -70,6 +70,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web、桌面 Web App
 ### 3. 套组件与状态
 
 **组件级任务必须先读 `references/component-design-contract.md`，再按类型精读：**
+- Actions / Tabs / Breadcrumb / Navigation / Feedback / Lists → `references/actions-navigation-feedback-components.md`；
 - 弹窗 / Sheet / Popover / Menu → `references/overlays-and-dialog-components.md`；
 - Select / Selector / Segmented / Combobox / Filter → `references/selection-and-input-components.md`；
 - Table / Data Grid / 排序 / 多选 / 批操作 → `references/tables-and-data-components.md`。
@@ -143,6 +144,7 @@ description: 为选择 macOS / Apple Liquid Glass 风格的 Web、桌面 Web App
 - **布局、滚动、稳定底栏、短屏/窄屏**：`references/layout-and-scroll.md`
 - **Toolbar、Sidebar、Inspector、Search、Menu、Selection**：`references/window-and-navigation.md`
 - **组件设计入口（选型 → 解剖 → 状态 → 行为 → 验收）**：`references/component-design-contract.md`
+- **Button、Tabs、Navigation、Feedback、List、Empty State**：`references/actions-navigation-feedback-components.md`
 - **弹窗、Sheet、Popover、Menu 的组件规格**：`references/overlays-and-dialog-components.md`
 - **Selector、Select、Combobox、Segmented、Filter**：`references/selection-and-input-components.md`
 - **Table、Data Grid、批量选择与排序**：`references/tables-and-data-components.md`
