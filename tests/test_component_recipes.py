@@ -53,7 +53,7 @@ class ComponentRecipesTests(unittest.TestCase):
     def test_skills_route_to_component_spec_files(self):
         web_skill = (WEB / "SKILL.md").read_text(encoding="utf-8")
         native_skill = (NATIVE / "SKILL.md").read_text(encoding="utf-8")
-        for filename in ("component-design-contract.md", "overlays-and-dialog-components.md",
+        for filename in ("component-design-contract.md", "actions-navigation-feedback-components.md", "overlays-and-dialog-components.md",
                          "selection-and-input-components.md", "tables-and-data-components.md",
                          "component-recipes.css", "component-showcase.html"):
             self.assertIn(filename, web_skill)
