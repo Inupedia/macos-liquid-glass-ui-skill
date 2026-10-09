@@ -207,6 +207,24 @@ Agent 应先选择主范式，再画布局，而不是默认所有产品三栏�
 
 完整规范不等于把所有组件都塞进项目。Agent 只展开真实业务会使用的部分。
 
+## 组件级设计系统（新增）
+
+仓库原有 `component-matrix.md` 解决「有哪些组件」，新增的组件设计合同进一步解决「每个组件应该怎么选、长什么样、怎么操作、怎么验证」。
+
+| 专题 | 具体内容 |
+|---|---|
+| [组件设计入口](skills/macos-liquid-glass-ui/references/component-design-contract.md) | Variant、Anatomy、Material、Token、状态、交互、验收 |
+| [弹窗与浮层](skills/macos-liquid-glass-ui/references/overlays-and-dialog-components.md) | Alert、Modal/Sheet、Popover、Menu、focus、Esc、关闭策略 |
+| [Selector 与输入](skills/macos-liquid-glass-ui/references/selection-and-input-components.md) | Select、Combobox、Segmented、Radio、Checkbox、Switch、异步选项 |
+| [表格与数据网格](skills/macos-liquid-glass-ui/references/tables-and-data-components.md) | Sort、Filter、Selection、Batch actions、Sticky、Overflow |
+| [Web 样式配方](skills/macos-liquid-glass-ui/assets/component-recipes.css) | 复用 foundation tokens 的局部 CSS 示例 |
+| [可运行组件 Showcase](skills/macos-liquid-glass-ui/assets/component-showcase.html) | 原生 dialog + select + 可排序/筛选/选择 table；本地打开 |
+| [macOS 原生组件规格](skills/macos-liquid-glass-native-ui/references/native-components.md) | SwiftUI/AppKit 系统 Sheet、Picker、Table 等映射 |
+
+本地预览：克隆仓库后，在浏览器中打开 `skills/macos-liquid-glass-ui/assets/component-showcase.html`；它是零构建依赖的交互示例，不等同于上线可用的整套组件库。
+
+**设计原则**：先选对组件和交互，再让 Material 服务层级。Table 正文、长表单和大量选项通常是实色内容；Liquid Glass 仅用于合适的功能层外壳。Web 示例基线不等于 Apple 官方数值。
+
 ## Web 框架适配
 
 实现参考覆盖：
