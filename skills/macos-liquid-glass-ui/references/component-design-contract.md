@@ -84,7 +84,7 @@
 - Sheet / Dialog / Popover / Menu：`references/overlays-and-dialog-components.md`
 - Table / Grid / 行选择 / 批操作：`references/tables-and-data-components.md`
 - 现成的样式示例：`assets/component-recipes.css` + `assets/component-showcase.html`。示例只演示视觉与基础原生交互，不代替成熟 headless 组件库。
-- 原生 macOS 组件对应关系：使用 native skill 的 `references/native-components.md`。
+- 原生 macOS 组件对应关系：使用 native skill 的 native-components.md（位于另一 Skill 目录）。
 
 ## 7. 交付验收
 
