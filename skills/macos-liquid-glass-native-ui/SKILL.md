@@ -33,7 +33,7 @@ description: 为原生 macOS SwiftUI / AppKit 产品设计、实现或审查 Liq
 
 ## 版本合同
 
-macOS 26.0+ 引入的 Liquid Glass API（签名与可用性详解见 `references/swiftui-appkit.md` §2）：
+macOS 26.0+ 引入的 Liquid Glass API（签名与可用性详解见 `references/swiftui-appkit.md` `2）：
 
 | 平台 | 符号 | 可用性 |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ macOS 26.0+ 引入的 Liquid Glass API（签名与可用性详解见 `references
 
 逃生舱：`UIDesignRequiresCompatibility`（Info.plist）。用最新 SDK 构建但保持旧外观，用于争取迁移时间，不要作为长期方案。
 
-**不要猜测 API 名、参数或版本号。** 写入代码前在目标 SDK 中 ⌥-click 复核；本文档已发现文档元数据与符号页 availability 冲突的案例，见 `references/swiftui-appkit.md` §2.5。
+**不要猜测 API 名、参数或版本号。** 写入代码前在目标 SDK 中 ⌥-click 复核；本文档已发现文档元数据与符号页 availability 冲突的案例，见 `references/swiftui-appkit.md` `2.5。
 
 ## 工作流程
 
@@ -64,6 +64,8 @@ macOS 26.0+ 引入的 Liquid Glass API（签名与可用性详解见 `references
 
 ### 3. 优先系统表现
 
+涉及弹窗、Sheet、Popover、Picker/Selector、Segmented、Table 或 Outline 时，**必须读取 `references/native-components.md`**。先决定系统组件与交互模型，再进入 visual polish；仅给出「系统自带组件即可」不构成完整的组件设计。明示选择状态、排序/过滤/多选、窗口归属、焦点恢复与失败恢复。
+
 先尝试系统组件和平台 API；只有系统组件无法表达产品需求时才自定义。
 
 自定义时先问：是否真的需要 glass？是否应该是 button/control style，而不是给容器 raw glass effect？是否包进了 `GlassEffectContainer`？是否能保持 content layer 稳定？系统辅助设置变化后是否仍然成立？
@@ -76,6 +78,7 @@ Liquid Glass 专项性能：同屏自定义 glass 数量与容器覆盖率，并
 
 ## 资源路由
 
+- 弹窗、Selector、Table、Outline 组件级选型、状态、键盘与验收：`references/native-components.md`
 - SwiftUI 与 AppKit 实现策略、API 签名与版本合同：`references/swiftui-appkit.md`
 - 窗口、Toolbar、Sidebar、Search、Commands 结构 API：`references/native-structure.md`
 - 场景与文稿生命周期（`MenuBarExtra`、`Settings`、`DocumentGroup` / `NSDocument`、窗口还原、Stage Manager、多显示器、Dock、Quick Look）：`references/native-scenes-and-documents.md`
@@ -85,6 +88,8 @@ Liquid Glass 专项性能：同屏自定义 glass 数量与容器覆盖率，并
 若需要 Web 视觉 token、Web page archetype 或 CSS fallback，不要混进本 Skill；转到 `macos-liquid-glass-ui`。App Icon / 产品图标转到 `macos-liquid-glass-icon`。
 
 ## 交付要求
+
+组件专项交付还要列出组件 Variant、结构、selection ownership、输入和错误状态、键盘路径，以及实际验证的窗口/系统偏好条件。
 
 设计/实现结果应说明：哪些区域直接使用系统组件；哪些区域做了自定义及原因；自定义 glass 的具体用途、数量与容器归属；窗口和命令模型；实际验证过的系统设置与窗口尺寸；OS build、Xcode/SDK 版本、是否做了 26.x vs 27.x 双版本验证；未验证限制。
 
