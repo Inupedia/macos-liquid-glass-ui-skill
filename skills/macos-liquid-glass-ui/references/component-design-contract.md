@@ -80,6 +80,7 @@
 
 ## 6. 精读路由
 
+- Actions、导航、反馈和列表：`references/actions-navigation-feedback-components.md`
 - 选择器、字段与过滤：`references/selection-and-input-components.md`
 - Sheet / Dialog / Popover / Menu：`references/overlays-and-dialog-components.md`
 - Table / Grid / 行选择 / 批操作：`references/tables-and-data-components.md`
