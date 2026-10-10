@@ -1,5 +1,7 @@
 # 完整组件覆盖矩阵
 
+**本文件是目录，不是具体设计规格。** 遇到 Dialog、Table、Selector 的设计/实现，先用 `references/component-design-contract.md` 形成设计合同，再按类型读取 `references/overlays-and-dialog-components.md`、`references/selection-and-input-components.md`、`references/tables-and-data-components.md`。不能仅按此清单的条目名交付。
+
 本文件定义“足够充足”的组件覆盖范围。Agent 不需要在每次任务里实现全部组件，但完整规范、设计系统或审查必须知道这些组件类别，并只选择业务实际使用的部分。
 
 ## 通用状态
@@ -289,7 +291,14 @@ Filter：结构化条件，例如状态、日期、人员、类型。
 
 同一页面不要无规律混用三种 density。
 
-## 16. 完整规范输出时
+## 16. 专项深度要求
+
+- 弹窗：至少明确 Alert/Modal/Sheet/Popover 的选型、是否可外点关闭、脏数据、焦点与内部滚动；详见弹窗规格。
+- Selector：必须明确 Select/Combobox/Radio/Segmented/Switch 的取舍，输入自由度、选项量、单选/多选及键盘模型；详见选择器规格。
+- Table：至少有 sort、filter、selection scope、batch actions、empty/error、水平溢出和键盘路径；详见表格规格。
+- 本仓库附带 `assets/component-showcase.html` + `assets/component-recipes.css`，作为视觉及基础原生行为参考，不是能直接替代 Headless/Radix/Element Plus 的生产组件库。
+
+## 17. 完整规范输出时
 
 用户要求“完整 design system”时，至少给出：
 
