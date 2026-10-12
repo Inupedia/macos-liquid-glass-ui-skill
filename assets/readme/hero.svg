@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="390" viewBox="0 0 1200 390" role="img" aria-labelledby="title desc">
+  <title id="title">macOS Liquid Glass Skills</title>
+  <desc id="desc">A restrained presentation of three skills for Web UI, native macOS UI and App Icon design, with a schematic showing a glass navigation layer around solid readable table content.</desc>
+  <defs>
+    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f9fafc"/>
+      <stop offset="100%" stop-color="#eef1f6"/>
+    </linearGradient>
+    <linearGradient id="nav" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.93"/>
+      <stop offset="100%" stop-color="#e8edf6" stop-opacity="0.85"/>
+    </linearGradient>
+    <clipPath id="windowClip"><rect x="658" y="48" width="488" height="292" rx="16"/></clipPath>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="390" rx="20" fill="#f5f5f7"/>
+  <path d="M 0 347 H 1200" stroke="#dcdde3" stroke-width="1"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif" fill="#1d1d1f">
+    <text x="62" y="75" font-family="ui-monospace, Menlo, monospace" font-size="16" letter-spacing="1.7" fill="#62626a">DESIGN SYSTEM  /  AGENT SKILLS</text>
+    <text x="60" y="165" font-size="67" font-weight="650" letter-spacing="-2.8">Liquid Glass</text>
+    <text x="61" y="234" font-size="67" font-weight="650" letter-spacing="-2.8">Skills</text>
+    <text x="63" y="284" font-size="23" fill="#555861">Web UI · Native macOS · App Icon</text>
+  </g>
+
+  <!-- Window geometry follows the repository's material boundaries: translucent navigation, solid content. -->
+  <rect x="654" y="44" width="496" height="300" rx="20" fill="#dfe3ea" opacity="0.6"/>
+  <rect x="658" y="48" width="488" height="292" rx="16" fill="url(#surface)" stroke="#ced2db"/>
+  <g clip-path="url(#windowClip)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
+    <rect x="658" y="48" width="488" height="45" fill="#f7f8fb"/>
+    <rect x="658" y="93" width="143" height="247" fill="url(#nav)"/>
+    <path d="M 658 93 H 1146 M 801 93 V 340" stroke="#dcdde3" stroke-width="1"/>
+
+    <text x="679" y="77" font-size="17" font-weight="600" fill="#27282b">Library</text>
+    <rect x="995" y="61" width="129" height="22" rx="11" fill="#eceef2"/>
+    <circle cx="1009" cy="72" r="4" stroke="#797c86" fill="none" stroke-width="1.5"/>
+    <path d="m1012 75 4 4" stroke="#797c86" stroke-width="1.5"/>
+    <text x="1023" y="77" font-size="12" fill="#62626a">Search</text>
+
+    <text x="676" y="126" font-size="12" font-weight="600" letter-spacing="1" fill="#85858e">WORKSPACE</text>
+    <text x="686" y="155" font-size="15" fill="#62626a">Overview</text>
+    <rect x="669" y="167" width="120" height="31" rx="8" fill="#dfeafa"/>
+    <rect x="679" y="177" width="3" height="11" rx="1.5" fill="#007aff"/>
+    <text x="689" y="188" font-size="15" font-weight="600" fill="#005fcc">Components</text>
+    <text x="686" y="224" font-size="15" fill="#62626a">Settings</text>
+
+    <rect x="802" y="94" width="344" height="246" fill="#ffffff"/>
+    <text x="824" y="129" font-size="22" font-weight="650" fill="#1d1d1f">Components</text>
+    <text x="824" y="154" font-size="13" fill="#62626a">Controls, states and behavior</text>
+
+    <rect x="823" y="168" width="296" height="31" rx="8" fill="#f8f9fb" stroke="#dcdde3"/>
+    <text x="837" y="188" font-size="14" fill="#1d1d1f">State</text>
+    <text x="1070" y="188" font-size="13" fill="#62626a">All  ▾</text>
+
+    <path d="M 824 216 H 1118" stroke="#dcdde3" stroke-width="1"/>
+    <text x="824" y="234" font-size="12" font-weight="600" fill="#85858e">COMPONENT</text>
+    <text x="1064" y="234" font-size="12" font-weight="600" fill="#85858e">TYPE</text>
+    <path d="M 824 246 H 1118" stroke="#dcdde3" stroke-width="1"/>
+    <text x="824" y="266" font-size="15" fill="#1d1d1f">Button</text>
+    <text x="1067" y="266" font-size="13" fill="#62626a">Action</text>
+    <path d="M 824 277 H 1118" stroke="#e8e9ee"/>
+    <text x="824" y="297" font-size="15" fill="#1d1d1f">Select</text>
+    <text x="1076" y="297" font-size="13" fill="#62626a">Input</text>
+    <path d="M 824 308 H 1118" stroke="#e8e9ee"/>
+    <text x="824" y="328" font-size="15" fill="#1d1d1f">Table</text>
+    <text x="1078" y="328" font-size="13" fill="#62626a">Data</text>
+  </g>
+
+  <g font-family="ui-monospace, Menlo, monospace" font-size="14" fill="#62626a">
+    <text x="63" y="370">01  WEB</text>
+    <text x="201" y="370">02  NATIVE</text>
+    <text x="367" y="370">03  ICON</text>
+    <text x="852" y="370">NAVIGATION: GLASS  /  CONTENT: SOLID</text>
+  </g>
+</svg>
